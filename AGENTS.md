@@ -2,7 +2,7 @@
 
 ## Alcance y flujo
 
-- No hacer push directo a `main`; todo cambio va en una rama `feat/`, `fix/`, `docs/` o `chore/` y un Pull Request.
+- Está prohibido hacer push directo a `main` o fusionar cambios sin validación. Todo cambio debe desarrollarse en una rama `feat/`, `fix/`, `docs/` o `chore/`, pasar por un Pull Request, ejecutar las validaciones correspondientes y ser revisado antes de fusionarse.
 - Un Pull Request debe tratar una sola funcionalidad o decisión acotada.
 - Usar commits descriptivos, trazables y en español de Chile: `tipo(ámbito): descripción`.
 - Una persona distinta de quien implementó debe revisar el cambio antes de integrarlo.
@@ -13,6 +13,18 @@
 ## Seguridad y calidad
 
 Aplicar OWASP y mínimo privilegio. Usar consultas parametrizadas, CSRF, hashing seguro, sesiones protegidas, autorización del lado servidor, validación de archivos, sanitización HTML y controles de subida seguros. Nunca guardar credenciales ni datos sensibles en Git.
+
+## Commits y Pull Requests
+
+Los commits deben usar el formato `tipo(ámbito): descripción breve`, estar escritos en español de Chile, tener un solo propósito y explicar el cambio cuando no sea evidente. Tipos permitidos: `feat`, `fix`, `docs`, `test`, `refactor`, `chore`, `ci` y `security`.
+
+Todo Pull Request debe referenciar su Issue, explicar el problema y la solución, indicar los archivos principales, incluir los comandos y resultados reales de validación, documentar cambios de seguridad, accesibilidad, migraciones o variables de entorno, e incluir evidencias reales cuando corresponda. No se puede fusionar sin validaciones automáticas y revisión independiente.
+
+Ejemplos de commits:
+
+- `feat(editorial): agrega transición de borrador a revisión`
+- `fix(auth): rechaza tokens de recuperación expirados`
+- `docs(fase-0): documenta ejecución local con Docker`
 
 ## Definición de terminado
 

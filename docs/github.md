@@ -1,6 +1,6 @@
 # Configuración recomendada de GitHub
 
-La protección de `main` debe configurarse manualmente en GitHub porque este repositorio local no tiene acceso remoto ni permisos para administrar reglas.
+El repositorio está publicado en GitHub y tiene configurado el remoto `origin`. La protección de `main` debe configurarse manualmente porque este repositorio local no administra reglas de GitHub.
 
 En `Settings → Branches → Branch protection rules`, crear una regla para `main` con:
 
@@ -11,5 +11,5 @@ En `Settings → Branches → Branch protection rules`, crear una regla para `ma
 - Bloquear force-push y eliminación de la rama.
 - Aplicar la regla a administradores.
 
-El remoto, la organización y los equipos revisores quedan pendientes de definir. No se ha publicado ningún cambio.
+La organización y los equipos revisores quedan pendientes de definir. Regla obligatoria: ningún cambio entra directamente a `main`; todo cambio debe llegar mediante un Pull Request después de pasar las validaciones automáticas y la revisión independiente correspondiente.
 

@@ -1,36 +1,68 @@
-# Fundación Creciendo Juntos
+# 🌱 Fundación Creciendo Juntos
 
 Plataforma ficticia de publicación y gestión editorial de noticias, creada como proyecto de portafolio profesional.
 
-## Estado
+> 📚 Proyecto documental en preparación para una plataforma editorial con foco en orden, trazabilidad y accesibilidad.
 
-Fundación documental. La Fase 0 fue autorizada el 2026-11-09 y se encuentra en preparación; no contiene funcionalidades de noticias.
+## 🧭 Estado
 
-## Stack previsto
+Fase 0 técnica aprobada. El repositorio contiene un esqueleto Laravel ejecutable y la infraestructura base; todavía no contiene funcionalidades de noticias.
 
-PHP, MySQL, HTML, CSS, JavaScript, Docker Compose, PHPUnit y herramientas de pruebas de navegador y accesibilidad.
+## 🛠️ Stack previsto
 
-## Inicio local previsto
+Laravel 13.x, PHP 8.3+, MySQL 8.4, Nginx, PHP-FPM, Blade, JavaScript progresivo, Docker Compose, Mailpit y PHPUnit.
 
-1. Copiar `.env.example` a `.env` y cambiar los valores locales.
-2. Levantar los servicios con `docker compose up -d`.
-3. Inicializar la base de datos mediante el procedimiento documentado en `docs/entorno-local.md`.
-4. Ejecutar las pruebas indicadas en `docs/pruebas/estrategia.md`.
+## 🚀 Inicio local
 
-Los comandos definitivos y la versión exacta del framework quedan por confirmar antes de la implementación.
+Requisitos: Docker Desktop en Windows, Docker Engine y Compose en Linux, o Docker Desktop en macOS.
 
-## Estructura
+En cualquiera de los tres sistemas:
 
-- `docs/`: arquitectura, ADR, pruebas, evidencias y trazabilidad.
-- `database/`: migraciones y datos ficticios de demostración.
-- `tests/`: pruebas organizadas por nivel.
-- `.github/`: plantillas y automatización futura.
+```bash
+cp .env.example .env
+docker compose up -d --build
+docker compose exec app php artisan key:generate
+docker compose exec app php artisan migrate --force
+docker compose exec app composer test
+```
 
-## Seguridad
+En PowerShell, el primer comando equivalente es:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+La aplicación queda disponible en <http://localhost:8080>, Mailpit en <http://localhost:8025> y la ruta de salud en <http://localhost:8080/health>.
+
+Para detener el entorno:
+
+```bash
+docker compose down
+```
+
+Para conservar los datos de MySQL entre reinicios no se debe añadir `-v` al comando anterior.
+
+Las dependencias exactas instaladas quedan fijadas en `composer.lock`.
+
+## 🗂️ Estructura
+
+- 📘 `docs/`: arquitectura, ADR, pruebas, evidencias y trazabilidad.
+- 🗄️ `database/`: migraciones y datos ficticios de demostración.
+- 🧪 `tests/`: pruebas organizadas por nivel.
+- ⚙️ `.github/`: plantillas y automatización futura.
+
+## 🎯 Alcance actual
+
+- Fase 0 aprobada y documentada.
+- Ruta `/health`, migración mínima, Docker Compose y CI base disponibles.
+- Funcionalidades de noticias todavía fuera de implementación.
+- Permisos detallados, imágenes, auditoría y flujo editorial reservados para fases posteriores.
+
+## 🔐 Seguridad
 
 No usar credenciales reales, datos personales ni contenido protegido. Las reglas obligatorias están en `AGENTS.md`.
 
-## Licencia
+## 📄 Licencia
 
-Por confirmar.
+MIT. Ver [LICENSE](LICENSE).
 

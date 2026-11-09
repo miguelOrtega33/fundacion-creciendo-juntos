@@ -6,7 +6,7 @@ Plataforma institucional responsiva para publicar y gestionar noticias con un fl
 
 ## Tecnología acordada
 
-PHP, MySQL, HTML, CSS, JavaScript, Docker Compose y herramientas de pruebas automatizadas. Framework PHP, versión, estrategia de frontend y licencia quedan por confirmar.
+Laravel 13.x sobre PHP 8.3 o superior, MySQL 8.4, Nginx con PHP-FPM, Blade con mejoras progresivas mediante JavaScript, Docker Compose, Mailpit y PHPUnit. La licencia del repositorio es MIT.
 
 ## Roles
 
@@ -37,5 +37,5 @@ Cada rol solo ve y ejecuta acciones autorizadas; el flujo no permite saltarse ap
 
 ## Pendientes
 
-Framework PHP, versión de PHP/MySQL, proveedor de correo productivo, política de retención, licencia, diseño visual, límites de archivos, definición de permisos detallados y política de publicación requieren decisión.
+El proveedor de correo productivo, la política de retención, el diseño visual, los límites y procesamiento de archivos, la definición detallada de permisos, la política de publicación, el flujo editorial y la auditoría requieren decisiones en fases posteriores.
 

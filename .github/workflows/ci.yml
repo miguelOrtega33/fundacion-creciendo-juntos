@@ -4,10 +4,55 @@ on:
   push:
     branches: [main]
 jobs:
-  placeholder:
+  application:
     runs-on: ubuntu-latest
+    env:
+      APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: fundacion_creciendo_juntos
+      DB_USERNAME: app
+      DB_PASSWORD: change-me-local
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: fundacion_creciendo_juntos
+          MYSQL_USER: app
+          MYSQL_PASSWORD: change-me-local
+          MYSQL_ROOT_PASSWORD: change-me-root-local
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uapp -pchange-me-local"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
     steps:
       - uses: actions/checkout@v4
-      - name: Verificar documentación inicial
-        run: test -f SPEC.md && test -f AGENTS.md && test -f README.md
+      - name: Configurar PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_mysql
+          coverage: none
+      - name: Validar Composer
+        run: composer validate --strict
+      - name: Instalar dependencias
+        run: composer install --prefer-dist --no-interaction --no-progress
+      - name: Revisar vulnerabilidades de dependencias
+        run: composer audit --no-interaction
+      - name: Validar sintaxis PHP
+        run: composer run analyse
+      - name: Revisar formato
+        run: composer run lint
+      - name: Validar configuración y rutas
+        run: |
+          php artisan config:clear
+          php artisan route:list
+      - name: Ejecutar migraciones
+        run: php artisan migrate --force
+      - name: Ejecutar pruebas
+        run: composer test
 
