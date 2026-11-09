@@ -1,0 +1,9 @@
+.git
+.github
+.env
+node_modules
+vendor
+storage/logs
+storage/framework
+storage/app/private
+coverage

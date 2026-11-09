@@ -10,5 +10,5 @@
 7. Endurecimiento: seguridad, accesibilidad, responsive, rendimiento y documentación.
 8. Preparación de entrega: matriz completa, evidencias reproducibles y guía de despliegue.
 
-Cada fase tendrá issue, rama, PR, pruebas y evidencia. No se inicia la Fase 0 sin aprobación.
+La Fase 0 está aprobada. Cada fase tendrá issue, rama, PR, pruebas y evidencia. Las decisiones pendientes del dominio editorial no bloquean el esqueleto técnico, pero sí la implementación de esas funcionalidades.
 

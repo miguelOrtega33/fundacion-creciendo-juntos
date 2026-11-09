@@ -1,0 +1,41 @@
+{
+    "name": "fundacion-creciendo-juntos/app",
+    "description": "Plataforma institucional de Fundación Creciendo Juntos",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.3",
+        "laravel/framework": "^13.0"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.24",
+        "phpunit/phpunit": "^12.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "analyse": "@php tools/php-lint.php",
+        "lint": "pint --test",
+        "test": "phpunit",
+        "check": [
+            "@composer validate --strict",
+            "@composer audit --no-interaction --no-dev"
+        ],
+        "post-autoload-dump": [
+            "@php artisan package:discover --ansi"
+        ]
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
