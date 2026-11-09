@@ -9,6 +9,11 @@
     <main>
         <h1>Panel de gestión</h1>
         <p>Sesión iniciada correctamente.</p>
+
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit">Cerrar sesión</button>
+        </form>
     </main>
 </body>
 </html>
