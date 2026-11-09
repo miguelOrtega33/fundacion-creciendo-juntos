@@ -16,7 +16,9 @@ Aplicar OWASP y mínimo privilegio. Usar consultas parametrizadas, CSRF, hashing
 
 ## Commits y Pull Requests
 
-Los commits deben usar el formato `tipo(ámbito): descripción breve`, estar escritos en español de Chile, tener un solo propósito y explicar el cambio cuando no sea evidente. Tipos permitidos: `feat`, `fix`, `docs`, `test`, `refactor`, `chore`, `ci` y `security`.
+Cada funcionalidad debe quedar separada en uno o más commits coherentes; no se deben mezclar funcionalidades distintas en un mismo commit. Los commits deben usar el formato `tipo(ámbito): descripción breve`, estar escritos en español de Chile y documentar en el cuerpo: qué se hizo, cómo se implementó, por qué esa solución es la práctica adecuada y cómo se verificó. Tipos permitidos: `feat`, `fix`, `docs`, `test`, `refactor`, `chore`, `ci` y `security`.
+
+Cuando una funcionalidad cambie la interfaz, el flujo visual o la experiencia de usuario, se debe adjuntar una captura real si ayuda a demostrar el resultado. La captura debe indicar qué se evalúa, el resultado esperado y el resultado obtenido; nunca se deben fabricar evidencias.
 
 Todo Pull Request debe referenciar su Issue, explicar el problema y la solución, indicar los archivos principales, incluir los comandos y resultados reales de validación, documentar cambios de seguridad, accesibilidad, migraciones o variables de entorno, e incluir evidencias reales cuando corresponda. No se puede fusionar sin validaciones automáticas y revisión independiente.
 
