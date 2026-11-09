@@ -48,6 +48,13 @@ final class AuthenticationTest extends TestCase
             ->assertRedirect('/login')
             ->assertSessionHasErrors('email');
         $this->assertGuest();
+
+        $loginPage = $this->followRedirects($response);
+
+        $loginPage
+            ->assertSee('Revisa los datos ingresados e intenta nuevamente.')
+            ->assertSee('value="maria@example.test"', false)
+            ->assertDontSee('value="incorrecta"', false);
     }
 
     public function test_panel_requires_authentication(): void
