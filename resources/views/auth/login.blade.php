@@ -77,6 +77,7 @@
                             <input id="remember" name="remember" type="checkbox" value="1" @checked(old('remember'))>
                             <span>Recordarme en este dispositivo</span>
                         </label>
+                        <a class="text-link" href="{{ route('password.request') }}">Olvidé mi contraseña</a>
                     </div>
 
                     <button class="submit-button" type="submit">Ingresar</button>

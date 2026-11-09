@@ -28,7 +28,7 @@ final class ForgotPasswordRequestTest extends TestCase
         $response = $this->postRecoveryRequest($user->email);
 
         $response
-            ->assertRedirect('/login')
+            ->assertRedirect('/recuperar-clave')
             ->assertSessionHas('status', self::STATUS_MESSAGE);
         Notification::assertSentTo($user, ResetPassword::class);
     }
@@ -40,7 +40,7 @@ final class ForgotPasswordRequestTest extends TestCase
         $response = $this->postRecoveryRequest('desconocida@example.test');
 
         $response
-            ->assertRedirect('/login')
+            ->assertRedirect('/recuperar-clave')
             ->assertSessionHas('status', self::STATUS_MESSAGE);
         Notification::assertNothingSent();
     }
@@ -49,7 +49,7 @@ final class ForgotPasswordRequestTest extends TestCase
     public function test_invalid_email_is_rejected(string $email): void
     {
         $this->postRecoveryRequest($email)
-            ->assertRedirect('/login')
+            ->assertRedirect('/recuperar-clave')
             ->assertSessionHasErrors('email');
     }
 
@@ -80,7 +80,7 @@ final class ForgotPasswordRequestTest extends TestCase
     private function postRecoveryRequest(string $email): TestResponse
     {
         return $this->withSession(['_token' => 'test-token'])
-            ->from('/login')
+            ->from('/recuperar-clave')
             ->post('/recuperar-clave', [
                 '_token' => 'test-token',
                 'email' => $email,

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/health', HealthController::class)->name('health');
 Route::get('/login', [LoginController::class, 'create'])->name('login');
 Route::post('/login', [LoginController::class, 'store'])->name('login.store');
+Route::get('/recuperar-clave', [ForgotPasswordController::class, 'create'])->name('password.request');
 Route::post('/recuperar-clave', [ForgotPasswordController::class, 'store'])
     ->middleware('throttle:5,1')
     ->name('password.email');

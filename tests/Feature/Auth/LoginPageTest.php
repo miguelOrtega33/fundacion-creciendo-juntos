@@ -17,6 +17,8 @@ final class LoginPageTest extends TestCase
             ->assertSee('Correo electrónico')
             ->assertSee('Contraseña')
             ->assertSee('Recordarme en este dispositivo')
+            ->assertSee('Olvidé mi contraseña')
+            ->assertSee(route('password.request'), false)
             ->assertSee('Ingresar');
     }
 }

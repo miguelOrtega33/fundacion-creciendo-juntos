@@ -20,4 +20,16 @@ final class ForgotPasswordRequest extends FormRequest
             'email' => ['required', 'string', 'email:rfc', 'max:255'],
         ];
     }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'email.required' => 'Ingresa tu correo electrónico.',
+            'email.email' => 'Ingresa un correo electrónico válido.',
+            'email.max' => 'El correo electrónico no puede superar los 255 caracteres.',
+        ];
+    }
 }
