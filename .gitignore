@@ -21,6 +21,7 @@
 !/storage/app/private/.gitignore
 *.log
 .phpunit.result.cache
+.playwright-cli/
 .idea/
 .vscode/
 Docker*.override.yml
