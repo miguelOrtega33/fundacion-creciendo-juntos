@@ -2,7 +2,9 @@
 
 - **Identificador:** EVI-AUTH-REC-002.
 - **Requisito:** recibir un enlace funcional y establecer una nueva contraseña mediante un token temporal.
-- **Commit evaluado:** `ccd03c2`.
+- **Commit funcional del recorrido visual:** `ccd03c2`.
+- **Commit de las capturas:** `107397a`.
+- **Vigencia automatizada hasta:** `e478638`.
 - **Entorno:** Docker, Nginx, PHP-FPM, worker de cola, MySQL, Mailpit y Chromium mediante Playwright.
 - **Esperado:** la solicitud entrega un correo en español mediante la cola y el formulario comunica una política de 15 a 64 caracteres antes de guardar la contraseña.
 - **Obtenido:** Mailpit recibió 1 mensaje para una cuenta ficticia con el asunto «Restablece tu contraseña»; el formulario respondió HTTP 200, presentó los límites esperados y mantuvo visibles sus controles.
@@ -13,6 +15,19 @@
 - **Vista de correo:** 1280 × 800 píxeles; asunto, destinatario y resumen en español visibles sin abrir el enlace.
 - **Señalización:** los recuadros rojos identifican los elementos evaluados.
 - **Datos:** las direcciones usan el dominio reservado `example.test`; ninguna captura expone tokens ni contraseñas y los datos ficticios se eliminaron después del recorrido.
+
+## Vigencia posterior de la evidencia
+
+Las capturas demuestran únicamente el recorrido visual indicado. Las correcciones posteriores se comprobaron con evidencia automatizada reproducible:
+
+- `ForgotPasswordRequestTest`: respuesta genérica, cifrado del trabajo inicial y límites por correo e IP.
+- `QueuedPasswordResetDeliveryTest`: cifrado de ambos trabajos, destinatario, worker real y recuperación ante una falla SMTP transitoria.
+- `AtomicPasswordResetConcurrencyTest`: un único consumo exitoso del token bajo concurrencia MySQL.
+- `ResetPasswordTest`: expiración, uso único, límites Unicode y Argon2id después del restablecimiento.
+- `AuthenticationTest`: transición de bcrypt a Argon2id e invalidación de sesiones, incluso antes del primer acceso al panel.
+- `ScheduleTest`: eliminación programada de trabajos fallidos con más de 168 horas.
+
+El canal temporal indirecto de una cola compartida y sus controles compensatorios están registrados en `docs/riesgos-y-pendientes.md`.
 
 ## Formulario de nueva contraseña
 

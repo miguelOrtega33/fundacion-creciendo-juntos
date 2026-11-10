@@ -2,7 +2,8 @@
 
 - **Identificador:** EVI-AUTH-REC-001.
 - **Requisito:** solicitar recuperación de contraseña desde una pantalla accesible y responsive.
-- **Commit evaluado:** `5023ed7`.
+- **Commit funcional del recorrido visual:** `5023ed7`.
+- **Commit de la captura:** `32a19c9`.
 - **Entorno:** aplicación local con Docker y navegador Chromium mediante Playwright.
 - **Resolución:** 390 × 844 píxeles.
 - **Esperado:** título, instrucciones, correo, acción principal y regreso al login visibles, sin desborde horizontal.
