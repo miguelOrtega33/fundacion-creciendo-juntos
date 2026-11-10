@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Symfony\Component\Mime\Address;
+use Symfony\Component\Process\Process;
 use Tests\TestCase;
 
 final class QueuedPasswordResetDeliveryTest extends TestCase
@@ -81,13 +82,14 @@ final class QueuedPasswordResetDeliveryTest extends TestCase
     {
         $queue = 'smtp-'.Str::uuid();
         $email = 'smtp.'.Str::uuid().'@example.test';
-        $transport = null;
+        $smtpPort = $this->reserveAvailablePort();
+        $smtpServer = null;
 
         config([
             'logging.default' => 'null',
             'mail.default' => 'smtp',
             'mail.mailers.smtp.host' => '127.0.0.1',
-            'mail.mailers.smtp.port' => 1,
+            'mail.mailers.smtp.port' => $smtpPort,
             'mail.mailers.smtp.timeout' => 1,
             'queue.default' => 'database',
             'queue.connections.database.queue' => $queue,
@@ -117,21 +119,20 @@ final class QueuedPasswordResetDeliveryTest extends TestCase
             DB::table('jobs')->where('queue', $queue)->update([
                 'available_at' => now()->timestamp,
             ]);
-            config(['mail.default' => 'array']);
-            $transport = Mail::mailer('array')->getSymfonyTransport();
-            self::assertInstanceOf(ArrayTransport::class, $transport);
-            $transport->flush();
+            $smtpServer = $this->startSmtpServer($smtpPort);
 
             $this->runOneWorker($queue);
 
+            $smtpOutput = $this->waitForSmtpDelivery($smtpServer);
+
             self::assertSame(0, DB::table('jobs')->where('queue', $queue)->count());
             self::assertSame(0, DB::table('failed_jobs')->where('queue', $queue)->count());
-            self::assertCount(1, $transport->messages());
+            self::assertStringContainsString('RECIPIENT:'.$email, $smtpOutput);
         } finally {
             DB::table('jobs')->where('queue', $queue)->delete();
             DB::table('failed_jobs')->where('queue', $queue)->delete();
             User::where('email', $email)->delete();
-            $transport?->flush();
+            $smtpServer?->stop(1);
         }
     }
 
@@ -154,5 +155,58 @@ final class QueuedPasswordResetDeliveryTest extends TestCase
         self::assertNotSame('', $command);
         self::assertFalse(str_starts_with($command, 'O:'));
         self::assertStringNotContainsString($secret, $payload);
+    }
+
+    private function reserveAvailablePort(): int
+    {
+        $socket = stream_socket_server('tcp://127.0.0.1:0', $errorCode, $errorMessage);
+        self::assertNotFalse($socket, "No se pudo reservar un puerto SMTP: {$errorMessage} ({$errorCode}).");
+
+        $address = stream_socket_get_name($socket, false);
+        fclose($socket);
+
+        self::assertIsString($address);
+
+        return (int) substr(strrchr($address, ':'), 1);
+    }
+
+    private function startSmtpServer(int $port): Process
+    {
+        $process = new Process(
+            [PHP_BINARY, base_path('tests/Support/run_fake_smtp_server.php')],
+            base_path(),
+            ['SMTP_PORT' => (string) $port],
+        );
+        $process->setTimeout(15);
+        $process->start();
+
+        $deadline = microtime(true) + 5;
+
+        while ($process->isRunning() && ! str_contains($process->getOutput(), 'READY')) {
+            if (microtime(true) >= $deadline) {
+                break;
+            }
+
+            usleep(10_000);
+        }
+
+        self::assertStringContainsString('READY', $process->getOutput().$process->getErrorOutput());
+
+        return $process;
+    }
+
+    private function waitForSmtpDelivery(Process $process): string
+    {
+        $deadline = microtime(true) + 5;
+
+        while ($process->isRunning() && ! str_contains($process->getOutput(), 'RECIPIENT:')) {
+            if (microtime(true) >= $deadline) {
+                break;
+            }
+
+            usleep(10_000);
+        }
+
+        return $process->getOutput().$process->getErrorOutput();
     }
 }
