@@ -4,6 +4,8 @@ namespace Tests\Feature\Auth;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Password;
 use Tests\TestCase;
 
 final class AuthenticationTest extends TestCase
@@ -60,5 +62,38 @@ final class AuthenticationTest extends TestCase
     public function test_panel_requires_authentication(): void
     {
         $this->get('/panel')->assertRedirect('/login');
+    }
+
+    public function test_password_reset_invalidates_an_existing_authenticated_session(): void
+    {
+        $user = User::create([
+            'name' => 'María Pérez',
+            'email' => 'maria@example.test',
+            'password' => 'ClaveSegura123!',
+        ]);
+        $this->withSession(['_token' => 'test-token'])
+            ->post('/login', [
+                '_token' => 'test-token',
+                'email' => $user->email,
+                'password' => 'ClaveSegura123!',
+            ])
+            ->assertRedirect('/panel');
+        $this->get('/panel')->assertOk();
+
+        $token = Password::createToken($user);
+        $this->withSession(['_token' => 'test-token'])
+            ->post('/restablecer-clave', [
+                '_token' => 'test-token',
+                'token' => $token,
+                'email' => $user->email,
+                'password' => 'NuevaClave123!',
+                'password_confirmation' => 'NuevaClave123!',
+            ])
+            ->assertRedirect('/login');
+
+        Auth::forgetGuards();
+
+        $this->get('/panel')->assertRedirect('/login');
+        $this->assertGuest();
     }
 }
