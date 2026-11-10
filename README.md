@@ -66,6 +66,8 @@ Las dependencias exactas instaladas quedan fijadas en `composer.lock`.
 
 No usar credenciales reales, datos personales ni contenido protegido. Las reglas obligatorias están en `AGENTS.md`.
 
+Las contraseñas nuevas usan Argon2id. Durante la transición desde bcrypt, `HASH_VERIFY=false` permite autenticar hashes históricos y Laravel los reemplaza automáticamente por Argon2id después de un inicio de sesión correcto. Cuando se confirme que no quedan hashes bcrypt, se debe cambiar `HASH_VERIFY` a `true` para volver a exigir un único algoritmo.
+
 ## 📄 Licencia
 
 MIT. Ver [LICENSE](LICENSE).

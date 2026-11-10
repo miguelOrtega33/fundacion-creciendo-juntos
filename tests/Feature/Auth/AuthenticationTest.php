@@ -5,6 +5,7 @@ namespace Tests\Feature\Auth;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
 use Tests\TestCase;
 
@@ -30,6 +31,33 @@ final class AuthenticationTest extends TestCase
             ->assertRedirect('/panel')
             ->assertSessionHasNoErrors();
         $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_existing_bcrypt_password_authenticates_and_is_rehashed_with_argon2id(): void
+    {
+        DB::table('users')->insert([
+            'name' => 'Usuario existente',
+            'email' => 'existente@example.test',
+            'password' => password_hash('ClaveAnterior123!', PASSWORD_BCRYPT),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->withSession(['_token' => 'test-token'])->post('/login', [
+            '_token' => 'test-token',
+            'email' => 'existente@example.test',
+            'password' => 'ClaveAnterior123!',
+        ]);
+
+        $response
+            ->assertRedirect('/panel')
+            ->assertSessionHasNoErrors();
+        $this->assertAuthenticated();
+
+        $updatedPassword = User::where('email', 'existente@example.test')->value('password');
+
+        self::assertIsString($updatedPassword);
+        self::assertSame('argon2id', password_get_info($updatedPassword)['algoName']);
     }
 
     public function test_invalid_credentials_are_rejected_without_revealing_user_state(): void
