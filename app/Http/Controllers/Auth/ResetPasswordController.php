@@ -3,16 +3,16 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Requests\ResetPasswordRequest;
-use App\Models\User;
-use Illuminate\Auth\Events\PasswordReset;
+use App\Services\Auth\AtomicPasswordResetter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 final class ResetPasswordController
 {
+    public function __construct(private readonly AtomicPasswordResetter $passwordResetter) {}
+
     public function create(Request $request, string $token): View
     {
         return view('auth.reset-password', [
@@ -23,16 +23,8 @@ final class ResetPasswordController
 
     public function store(ResetPasswordRequest $request): RedirectResponse
     {
-        $status = Password::reset(
+        $status = $this->passwordResetter->reset(
             $request->safe()->only(['email', 'password', 'password_confirmation', 'token']),
-            function (User $user, string $password): void {
-                $user->forceFill([
-                    'password' => $password,
-                    'remember_token' => Str::random(60),
-                ])->save();
-
-                event(new PasswordReset($user));
-            },
         );
 
         if ($status !== Password::PASSWORD_RESET) {

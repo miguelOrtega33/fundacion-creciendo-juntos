@@ -53,6 +53,8 @@ jobs:
           php artisan route:list
       - name: Ejecutar migraciones
         run: php artisan migrate --force
+      - name: Probar consumo concurrente de tokens en MySQL
+        run: composer test:mysql-concurrency
       - name: Ejecutar pruebas
         run: composer test
 
