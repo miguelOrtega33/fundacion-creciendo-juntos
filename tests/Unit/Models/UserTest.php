@@ -38,6 +38,7 @@ final class UserTest extends TestCase
 
         self::assertNotSame('ClaveSegura123!', $user->password);
         self::assertTrue(Hash::check('ClaveSegura123!', $user->password));
+        self::assertSame('argon2id', password_get_info($user->password)['algoName']);
     }
 
     public function test_rejects_a_duplicate_email(): void
