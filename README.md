@@ -20,9 +20,11 @@ En cualquiera de los tres sistemas:
 
 ```bash
 cp .env.example .env
-docker compose up -d --build
-docker compose exec app php artisan key:generate
-docker compose exec app php artisan migrate --force
+docker compose build app worker
+docker compose run --rm --no-deps --user root app php artisan key:generate
+docker compose up -d mysql mailpit
+docker compose run --rm app php artisan migrate --force
+docker compose up -d app nginx worker
 docker compose exec app composer test
 ```
 
@@ -33,6 +35,8 @@ Copy-Item .env.example .env
 ```
 
 La aplicación queda disponible en <http://localhost:8080>, Mailpit en <http://localhost:8025> y la ruta de salud en <http://localhost:8080/health>.
+
+La clave se genera antes de iniciar los servicios persistentes. El worker comprueba además que `APP_KEY`, `jobs` y `failed_jobs` estén disponibles antes de consumir trabajos cifrados.
 
 Para detener el entorno:
 
