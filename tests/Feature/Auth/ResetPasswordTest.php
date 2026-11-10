@@ -43,7 +43,10 @@ final class ResetPasswordTest extends TestCase
             ->assertRedirect('/login')
             ->assertSessionHas('status');
 
-        self::assertTrue(Hash::check('NuevaClaveSegura123!', $user->fresh()->password));
+        $updatedPassword = $user->fresh()->password;
+
+        self::assertTrue(Hash::check('NuevaClaveSegura123!', $updatedPassword));
+        self::assertSame('argon2id', password_get_info($updatedPassword)['algoName']);
         self::assertDatabaseMissing('password_reset_tokens', ['email' => $user->email]);
 
         $this->postReset($token, $user->email, 'OtraClaveSegura123!')
