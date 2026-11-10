@@ -18,6 +18,7 @@ docker compose up -d mysql mailpit
 docker compose run --rm app php artisan migrate --force
 docker compose up -d app nginx worker
 docker compose exec app composer test
+docker compose exec app composer test:mysql
 ```
 
 El orden es obligatorio en una instalación nueva: primero se genera `APP_KEY`, luego se ejecutan las migraciones y finalmente se inicia el worker. Como defensa adicional, el entrypoint del worker espera una clave no vacía y las tablas `jobs` y `failed_jobs` antes de consumir la cola.
@@ -32,5 +33,8 @@ docker compose exec app composer audit --no-interaction
 docker compose exec app composer run analyse
 docker compose exec app composer run lint
 docker compose exec app composer test
+docker compose exec app composer test:mysql
 ```
+
+La suite `composer test` usa SQLite en memoria para pruebas rápidas. La suite `composer test:mysql` requiere el servicio `mysql` saludable y las migraciones aplicadas; comprueba concurrencia, atomicidad y procesamiento real de la cola sobre MySQL. Las dos deben ejecutarse antes de abrir un Pull Request.
 
