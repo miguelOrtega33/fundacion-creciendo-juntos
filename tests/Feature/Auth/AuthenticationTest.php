@@ -3,6 +3,7 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
+use App\Services\Auth\AtomicPasswordResetter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -118,6 +119,36 @@ final class AuthenticationTest extends TestCase
                 'password_confirmation' => 'NuevaClaveSegura123!',
             ])
             ->assertRedirect('/login');
+
+        Auth::forgetGuards();
+
+        $this->get('/panel')->assertRedirect('/login');
+        $this->assertGuest();
+    }
+
+    public function test_password_reset_invalidates_session_before_first_authenticated_request(): void
+    {
+        $user = User::create([
+            'name' => 'María Pérez',
+            'email' => 'maria@example.test',
+            'password' => 'ClaveSegura123!',
+        ]);
+        $this->withSession(['_token' => 'test-token'])
+            ->post('/login', [
+                '_token' => 'test-token',
+                'email' => $user->email,
+                'password' => 'ClaveSegura123!',
+            ])
+            ->assertRedirect('/panel');
+
+        $status = app(AtomicPasswordResetter::class)->reset([
+            'token' => Password::createToken($user),
+            'email' => $user->email,
+            'password' => 'NuevaClaveSegura123!',
+            'password_confirmation' => 'NuevaClaveSegura123!',
+        ]);
+
+        self::assertSame(Password::PASSWORD_RESET, $status);
 
         Auth::forgetGuards();
 
