@@ -4,6 +4,7 @@ namespace Tests\MySql;
 
 use App\Jobs\SendPasswordResetLink;
 use App\Models\User;
+use App\Notifications\ResetPasswordNotification;
 use Illuminate\Mail\Transport\ArrayTransport;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -76,13 +77,71 @@ final class QueuedPasswordResetDeliveryTest extends TestCase
         }
     }
 
+    public function test_transient_mail_failure_is_delayed_and_can_recover(): void
+    {
+        $queue = 'smtp-'.Str::uuid();
+        $email = 'smtp.'.Str::uuid().'@example.test';
+        $transport = null;
+
+        config([
+            'logging.default' => 'null',
+            'mail.default' => 'smtp',
+            'mail.mailers.smtp.host' => '127.0.0.1',
+            'mail.mailers.smtp.port' => 1,
+            'mail.mailers.smtp.timeout' => 1,
+            'queue.default' => 'database',
+            'queue.connections.database.queue' => $queue,
+        ]);
+        Mail::purge('smtp');
+
+        $user = User::create([
+            'name' => 'Usuario con falla SMTP',
+            'email' => $email,
+            'password' => 'ClaveAnterior123!',
+        ]);
+
+        try {
+            $user->notify(new ResetPasswordNotification('token-prueba'));
+            $failureStartedAt = now()->timestamp;
+
+            $this->runOneWorker($queue);
+
+            $releasedJob = DB::table('jobs')->where('queue', $queue)->first();
+
+            self::assertNotNull($releasedJob);
+            self::assertSame(1, $releasedJob->attempts);
+            self::assertGreaterThanOrEqual($failureStartedAt + 55, $releasedJob->available_at);
+            self::assertLessThanOrEqual(now()->timestamp + 65, $releasedJob->available_at);
+            self::assertSame(0, DB::table('failed_jobs')->where('queue', $queue)->count());
+
+            DB::table('jobs')->where('queue', $queue)->update([
+                'available_at' => now()->timestamp,
+            ]);
+            config(['mail.default' => 'array']);
+            $transport = Mail::mailer('array')->getSymfonyTransport();
+            self::assertInstanceOf(ArrayTransport::class, $transport);
+            $transport->flush();
+
+            $this->runOneWorker($queue);
+
+            self::assertSame(0, DB::table('jobs')->where('queue', $queue)->count());
+            self::assertSame(0, DB::table('failed_jobs')->where('queue', $queue)->count());
+            self::assertCount(1, $transport->messages());
+        } finally {
+            DB::table('jobs')->where('queue', $queue)->delete();
+            DB::table('failed_jobs')->where('queue', $queue)->delete();
+            User::where('email', $email)->delete();
+            $transport?->flush();
+        }
+    }
+
     private function runOneWorker(string $queue): void
     {
         $this->artisan('queue:work', [
             'connection' => 'database',
             '--queue' => $queue,
             '--once' => true,
-            '--tries' => 1,
+            '--tries' => 3,
         ])->assertSuccessful();
     }
 

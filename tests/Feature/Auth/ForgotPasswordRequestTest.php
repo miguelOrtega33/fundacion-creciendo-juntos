@@ -83,6 +83,7 @@ final class ForgotPasswordRequestTest extends TestCase
         self::assertInstanceOf(ShouldQueue::class, $job);
         self::assertInstanceOf(ShouldBeEncrypted::class, $job);
         self::assertSame('database', $job->connection);
+        self::assertSame([60, 300], $job->backoff());
     }
 
     public function test_smtp_failure_does_not_change_the_http_response(): void

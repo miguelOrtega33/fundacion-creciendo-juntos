@@ -26,6 +26,14 @@ final class ResetPasswordNotification extends Notification implements ShouldBeEn
         return ['mail'];
     }
 
+    /**
+     * @return array<int, int>
+     */
+    public function backoff(): array
+    {
+        return [60, 300];
+    }
+
     public function toMail(object $notifiable): MailMessage
     {
         $expirationMinutes = (int) config('auth.passwords.users.expire', 60);

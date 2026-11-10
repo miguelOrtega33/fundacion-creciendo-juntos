@@ -24,4 +24,12 @@ final class SendPasswordResetLink implements ShouldBeEncrypted, ShouldQueue
     {
         Password::sendResetLink(['email' => $this->email]);
     }
+
+    /**
+     * @return array<int, int>
+     */
+    public function backoff(): array
+    {
+        return [60, 300];
+    }
 }
