@@ -3,8 +3,9 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
-use Illuminate\Auth\Notifications\ResetPassword;
+use App\Notifications\ResetPasswordNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Testing\TestResponse;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -30,7 +31,7 @@ final class ForgotPasswordRequestTest extends TestCase
         $response
             ->assertRedirect('/recuperar-clave')
             ->assertSessionHas('status', self::STATUS_MESSAGE);
-        Notification::assertSentTo($user, ResetPassword::class);
+        Notification::assertSentTo($user, ResetPasswordNotification::class);
     }
 
     public function test_unknown_email_receives_same_response_without_notification(): void
@@ -43,6 +44,30 @@ final class ForgotPasswordRequestTest extends TestCase
             ->assertRedirect('/recuperar-clave')
             ->assertSessionHas('status', self::STATUS_MESSAGE);
         Notification::assertNothingSent();
+    }
+
+    public function test_smtp_failure_does_not_change_the_http_response(): void
+    {
+        config([
+            'mail.default' => 'smtp',
+            'mail.mailers.smtp.host' => 'smtp-inexistente.invalid',
+            'queue.default' => 'database',
+        ]);
+        $user = User::create([
+            'name' => 'María Pérez',
+            'email' => 'maria@example.test',
+            'password' => 'ClaveSegura123!',
+        ]);
+
+        $this->postRecoveryRequest($user->email)
+            ->assertRedirect('/recuperar-clave')
+            ->assertSessionHas('status', self::STATUS_MESSAGE);
+
+        self::assertDatabaseCount('jobs', 1);
+        self::assertStringNotContainsString(
+            $user->email,
+            (string) DB::table('jobs')->value('payload'),
+        );
     }
 
     #[DataProvider('invalidEmails')]

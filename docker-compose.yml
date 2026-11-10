@@ -16,6 +16,25 @@ services:
       mysql:
         condition: service_healthy
 
+  worker:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    working_dir: /var/www/html
+    env_file:
+      - .env
+    environment:
+      COMPOSER_CACHE_DIR: /tmp/composer-cache
+      COMPOSER_ROOT_VERSION: dev-main
+    volumes:
+      - .:/var/www/html
+      - vendor_data:/var/www/html/vendor
+    command: php artisan queue:work --sleep=1 --tries=3 --timeout=30
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+
   nginx:
     image: nginx:1.27-alpine
     ports:
