@@ -21,7 +21,7 @@ docker compose exec app composer test
 docker compose exec app composer test:mysql
 ```
 
-El orden es obligatorio en una instalación nueva: primero se genera `APP_KEY`, luego se ejecutan las migraciones y finalmente se inicia el worker. Como defensa adicional, el entrypoint del worker espera una clave no vacía y las tablas `jobs` y `failed_jobs` antes de consumir la cola.
+El orden es obligatorio en una instalación nueva: primero se genera `APP_KEY`, luego se ejecutan las migraciones y finalmente se inicia el worker. App y worker deben compartir la misma clave. Como defensa adicional, el entrypoint verifica una operación real de cifrado y descifrado y espera las tablas `jobs` y `failed_jobs` antes de consumir la cola.
 
 La migración `phase_zero_checks` solo verifica la conexión y el ciclo de migraciones. No crea datos de negocio.
 

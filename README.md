@@ -37,7 +37,7 @@ Copy-Item .env.example .env
 
 La aplicación queda disponible en <http://localhost:8080>, Mailpit en <http://localhost:8025> y la ruta de salud en <http://localhost:8080/health>.
 
-La clave se genera antes de iniciar los servicios persistentes. El worker comprueba además que `APP_KEY`, `jobs` y `failed_jobs` estén disponibles antes de consumir trabajos cifrados.
+La clave se genera antes de iniciar los servicios persistentes. App y worker deben leer la misma `APP_KEY`. Antes de consumir trabajos cifrados, el worker comprueba que la clave pueda cifrar y descifrar correctamente y que las tablas `jobs` y `failed_jobs` estén disponibles.
 
 `composer test` ejecuta la suite rápida con SQLite en memoria. `composer test:mysql` usa la base MySQL migrada y valida los casos que dependen de su comportamiento real: consumo atómico concurrente, trabajos cifrados, reintentos de cola y recuperación ante una falla SMTP transitoria. Ambas suites son obligatorias antes de abrir un Pull Request.
 
