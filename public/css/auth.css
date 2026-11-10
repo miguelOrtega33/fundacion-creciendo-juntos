@@ -143,6 +143,12 @@ input {
     line-height: 1.45;
 }
 
+.alert-success {
+    border-left-color: var(--color-primary);
+    color: var(--color-primary-dark);
+    background: #edf8f3;
+}
+
 .field {
     margin-bottom: 1.2rem;
 }
@@ -187,6 +193,14 @@ input {
     font-size: 0.85rem;
 }
 
+.field-help {
+    display: block;
+    margin-top: 0.45rem;
+    color: var(--color-muted);
+    font-size: 0.85rem;
+    line-height: 1.45;
+}
+
 .form-options {
     display: flex;
     align-items: center;
@@ -194,6 +208,27 @@ input {
     margin: 0.25rem 0 1.5rem;
     color: var(--color-muted);
     font-size: 0.9rem;
+}
+
+.text-link {
+    color: var(--color-primary-dark);
+    font-weight: 700;
+    text-underline-offset: 0.2em;
+}
+
+.text-link:hover {
+    color: var(--color-primary);
+}
+
+.text-link:focus-visible {
+    border-radius: 0.2rem;
+    outline: 3px solid var(--color-accent);
+    outline-offset: 3px;
+}
+
+.auth-actions {
+    margin-top: 1.5rem;
+    text-align: center;
 }
 
 .check-label {

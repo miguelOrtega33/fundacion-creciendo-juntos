@@ -28,6 +28,8 @@
         "analyse": "@php tools/php-lint.php",
         "lint": "pint --test",
         "test": "phpunit",
+        "test:mysql": "phpunit -c phpunit.mysql.xml",
+        "test:mysql-concurrency": "phpunit -c phpunit.mysql.xml --filter AtomicPasswordResetConcurrencyTest",
         "check": [
             "@composer validate --strict",
             "@composer audit --no-interaction --no-dev"

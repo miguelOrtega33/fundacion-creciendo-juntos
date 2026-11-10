@@ -4,14 +4,46 @@ services:
       context: .
       dockerfile: docker/php/Dockerfile
     working_dir: /var/www/html
-    env_file:
-      - .env
     environment:
       COMPOSER_CACHE_DIR: /tmp/composer-cache
       COMPOSER_ROOT_VERSION: dev-main
     volumes:
       - .:/var/www/html
       - vendor_data:/var/www/html/vendor
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    working_dir: /var/www/html
+    environment:
+      COMPOSER_CACHE_DIR: /tmp/composer-cache
+      COMPOSER_ROOT_VERSION: dev-main
+    volumes:
+      - .:/var/www/html
+      - vendor_data:/var/www/html/vendor
+    command: sh docker/php/worker-entrypoint.sh
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    working_dir: /var/www/html
+    environment:
+      COMPOSER_CACHE_DIR: /tmp/composer-cache
+      COMPOSER_ROOT_VERSION: dev-main
+    volumes:
+      - .:/var/www/html
+      - vendor_data:/var/www/html/vendor
+    command: sh docker/php/worker-entrypoint.sh php artisan schedule:work
+    restart: unless-stopped
     depends_on:
       mysql:
         condition: service_healthy

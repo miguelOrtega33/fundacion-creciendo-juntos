@@ -20,10 +20,13 @@ En cualquiera de los tres sistemas:
 
 ```bash
 cp .env.example .env
-docker compose up -d --build
-docker compose exec app php artisan key:generate
-docker compose exec app php artisan migrate --force
+docker compose build app worker scheduler
+docker compose run --rm --no-deps --user root app php artisan key:generate
+docker compose up -d mysql mailpit
+docker compose run --rm app php artisan migrate --force
+docker compose up -d app nginx worker scheduler
 docker compose exec app composer test
+docker compose exec app composer test:mysql
 ```
 
 En PowerShell, el primer comando equivalente es:
@@ -33,6 +36,12 @@ Copy-Item .env.example .env
 ```
 
 La aplicación queda disponible en <http://localhost:8080>, Mailpit en <http://localhost:8025> y la ruta de salud en <http://localhost:8080/health>.
+
+La clave se genera antes de iniciar los servicios persistentes. App, worker y scheduler deben leer la misma `APP_KEY`. Antes de consumir trabajos cifrados o ejecutar tareas programadas, el entrypoint comprueba que la clave pueda cifrar y descifrar correctamente y que las tablas `jobs` y `failed_jobs` estén disponibles.
+
+El scheduler elimina diariamente, a las 03:00 de `America/Santiago`, los trabajos fallidos con más de 168 horas. Antes de ese plazo se pueden inspeccionar con `php artisan queue:failed` y reintentar por UUID con `php artisan queue:retry UUID`.
+
+`composer test` ejecuta la suite rápida con SQLite en memoria. `composer test:mysql` usa la base MySQL migrada y valida los casos que dependen de su comportamiento real: consumo atómico concurrente, trabajos cifrados, reintentos de cola y recuperación ante una falla SMTP transitoria. Ambas suites son obligatorias antes de abrir un Pull Request.
 
 Para detener el entorno:
 
@@ -61,6 +70,8 @@ Las dependencias exactas instaladas quedan fijadas en `composer.lock`.
 ## 🔐 Seguridad
 
 No usar credenciales reales, datos personales ni contenido protegido. Las reglas obligatorias están en `AGENTS.md`.
+
+Las contraseñas nuevas usan Argon2id. Durante la transición desde bcrypt, `HASH_VERIFY=false` permite autenticar hashes históricos y Laravel los reemplaza automáticamente por Argon2id después de un inicio de sesión correcto. Cuando se confirme que no quedan hashes bcrypt, se debe cambiar `HASH_VERIFY` a `true` para volver a exigir un único algoritmo.
 
 ## 📄 Licencia
 

@@ -53,6 +53,12 @@ jobs:
           php artisan route:list
       - name: Ejecutar migraciones
         run: php artisan migrate --force
+      - name: Validar reversibilidad de migraciones
+        run: |
+          php artisan migrate:rollback --force
+          php artisan migrate --force
+      - name: Probar flujos MySQL y cola real
+        run: composer test:mysql
       - name: Ejecutar pruebas
         run: composer test
 
