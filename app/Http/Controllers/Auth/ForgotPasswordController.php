@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Requests\ForgotPasswordRequest;
+use App\Jobs\SendPasswordResetLink;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Password;
 use Illuminate\View\View;
 
 final class ForgotPasswordController
@@ -18,7 +18,7 @@ final class ForgotPasswordController
 
     public function store(ForgotPasswordRequest $request): RedirectResponse
     {
-        Password::sendResetLink($request->safe()->only('email'));
+        SendPasswordResetLink::dispatch($request->string('email')->toString());
 
         return back()->with('status', self::STATUS_MESSAGE);
     }
