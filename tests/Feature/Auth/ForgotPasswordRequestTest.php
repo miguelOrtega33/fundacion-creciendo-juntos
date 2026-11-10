@@ -147,6 +147,19 @@ final class ForgotPasswordRequestTest extends TestCase
         }
     }
 
+    public function test_different_emails_behind_same_ip_are_limited_by_ip(): void
+    {
+        Queue::fake();
+
+        for ($request = 1; $request <= 30; $request++) {
+            $this->postRecoveryRequest("persona{$request}@example.test")
+                ->assertRedirect();
+        }
+
+        $this->postRecoveryRequest('persona31@example.test')
+            ->assertTooManyRequests();
+    }
+
     private function postRecoveryRequest(string $email): TestResponse
     {
         return $this->withSession(['_token' => 'test-token'])
