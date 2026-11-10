@@ -30,23 +30,36 @@ final class ResetPasswordTest extends TestCase
         $user = $this->createUser();
         $token = Password::createToken($user);
 
-        $this->postReset($token, $user->email, 'NuevaClave123!')
+        $this->postReset($token, $user->email, 'NuevaClaveSegura123!')
             ->assertRedirect('/login')
             ->assertSessionHas('status');
 
-        self::assertTrue(Hash::check('NuevaClave123!', $user->fresh()->password));
+        self::assertTrue(Hash::check('NuevaClaveSegura123!', $user->fresh()->password));
         self::assertDatabaseMissing('password_reset_tokens', ['email' => $user->email]);
 
-        $this->postReset($token, $user->email, 'OtraClave123!')
+        $this->postReset($token, $user->email, 'OtraClaveSegura123!')
             ->assertSessionHasErrors('email');
-        self::assertTrue(Hash::check('NuevaClave123!', $user->fresh()->password));
+        self::assertTrue(Hash::check('NuevaClaveSegura123!', $user->fresh()->password));
+    }
+
+    #[DataProvider('validResetPasswordBoundaries')]
+    public function test_valid_password_boundaries_can_reset_password(string $password): void
+    {
+        $user = $this->createUser();
+        $token = Password::createToken($user);
+
+        $this->postReset($token, $user->email, $password)
+            ->assertRedirect('/login')
+            ->assertSessionHas('status');
+
+        self::assertTrue(Hash::check($password, $user->fresh()->password));
     }
 
     public function test_invalid_token_does_not_change_password(): void
     {
         $user = $this->createUser();
 
-        $this->postReset('token-invalido', $user->email, 'NuevaClave123!')
+        $this->postReset('token-invalido', $user->email, 'NuevaClaveSegura123!')
             ->assertSessionHasErrors('email');
 
         self::assertTrue(Hash::check('ClaveSegura123!', $user->fresh()->password));
@@ -60,7 +73,7 @@ final class ResetPasswordTest extends TestCase
             ->where('email', $user->email)
             ->update(['created_at' => now()->subMinutes(61)]);
 
-        $this->postReset($token, $user->email, 'NuevaClave123!')
+        $this->postReset($token, $user->email, 'NuevaClaveSegura123!')
             ->assertSessionHasErrors('email');
 
         self::assertTrue(Hash::check('ClaveSegura123!', $user->fresh()->password));
@@ -76,8 +89,8 @@ final class ResetPasswordTest extends TestCase
             '_token' => 'test-token',
             'token' => 'token-prueba',
             'email' => 'maria@example.test',
-            'password' => 'NuevaClave123!',
-            'password_confirmation' => 'NuevaClave123!',
+            'password' => 'NuevaClaveSegura123!',
+            'password_confirmation' => 'NuevaClaveSegura123!',
         ], $overrides);
 
         $this->withSession(['_token' => 'test-token'])
@@ -89,11 +102,11 @@ final class ResetPasswordTest extends TestCase
     public function test_excessive_invalid_token_attempts_are_rate_limited(): void
     {
         for ($request = 1; $request <= 5; $request++) {
-            $this->postReset('token-invalido', 'maria@example.test', 'NuevaClave123!')
+            $this->postReset('token-invalido', 'maria@example.test', 'NuevaClaveSegura123!')
                 ->assertRedirect();
         }
 
-        $this->postReset('token-invalido', 'maria@example.test', 'NuevaClave123!')
+        $this->postReset('token-invalido', 'maria@example.test', 'NuevaClaveSegura123!')
             ->assertTooManyRequests();
     }
 
@@ -104,8 +117,20 @@ final class ResetPasswordTest extends TestCase
     {
         return [
             'token vacío' => [['token' => ''], 'token'],
-            'contraseña corta' => [['password' => 'corta', 'password_confirmation' => 'corta'], 'password'],
-            'confirmación distinta' => [['password_confirmation' => 'OtraClave123!'], 'password'],
+            'contraseña de 14 caracteres' => [['password' => '12345678901234', 'password_confirmation' => '12345678901234'], 'password'],
+            'contraseña de 65 caracteres' => [['password' => str_repeat('a', 65), 'password_confirmation' => str_repeat('a', 65)], 'password'],
+            'confirmación distinta' => [['password_confirmation' => 'OtraClaveSegura123!'], 'password'],
+        ];
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function validResetPasswordBoundaries(): array
+    {
+        return [
+            '15 caracteres' => [str_repeat('a', 15)],
+            '64 caracteres Unicode' => [str_repeat('á', 64)],
         ];
     }
 

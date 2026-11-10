@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password;
 
 final class AppServiceProvider extends ServiceProvider
 {
@@ -17,6 +18,8 @@ final class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Password::defaults(fn (): Password => Password::min(15)->max(64));
+
         RateLimiter::for('password-recovery', fn (Request $request): array => [
             Limit::perMinute(5)->by('email:'.$this->emailKey($request)),
             Limit::perMinute(30)->by('ip:'.$request->ip()),

@@ -30,6 +30,17 @@ final class UserTest extends TestCase
         self::assertTrue($validator->passes());
     }
 
+    #[DataProvider('validPasswordBoundaries')]
+    public function test_accepts_password_boundaries(string $password): void
+    {
+        $validator = Validator::make(
+            array_replace($this->validUserData(), ['password' => $password]),
+            UserRules::create(),
+        );
+
+        self::assertTrue($validator->passes());
+    }
+
     public function test_hashes_password_when_user_is_created(): void
     {
         $user = new User($this->validUserData());
@@ -63,7 +74,19 @@ final class UserTest extends TestCase
             'correo vacío' => [array_replace($valid, ['email' => '']), 'email'],
             'correo inválido' => [array_replace($valid, ['email' => 'no-es-correo']), 'email'],
             'contraseña vacía' => [array_replace($valid, ['password' => '']), 'password'],
-            'contraseña demasiado corta' => [array_replace($valid, ['password' => 'corta']), 'password'],
+            'contraseña de 14 caracteres' => [array_replace($valid, ['password' => '12345678901234']), 'password'],
+            'contraseña de 65 caracteres' => [array_replace($valid, ['password' => str_repeat('a', 65)]), 'password'],
+        ];
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function validPasswordBoundaries(): array
+    {
+        return [
+            '15 caracteres' => [str_repeat('a', 15)],
+            '64 caracteres' => [str_repeat('á', 64)],
         ];
     }
 

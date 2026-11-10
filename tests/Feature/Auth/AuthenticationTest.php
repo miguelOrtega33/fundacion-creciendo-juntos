@@ -86,8 +86,8 @@ final class AuthenticationTest extends TestCase
                 '_token' => 'test-token',
                 'token' => $token,
                 'email' => $user->email,
-                'password' => 'NuevaClave123!',
-                'password_confirmation' => 'NuevaClave123!',
+                'password' => 'NuevaClaveSegura123!',
+                'password_confirmation' => 'NuevaClaveSegura123!',
             ])
             ->assertRedirect('/login');
 
