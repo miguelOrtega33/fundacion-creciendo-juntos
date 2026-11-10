@@ -1,6 +1,6 @@
 # ADR-0008: Modelo de roles y permisos
 
-- Estado: En elaboración
+- Estado: Aprobado
 - Fecha: 2026-11-10
 - Issue: #8
 
@@ -8,7 +8,13 @@
 
 La aplicación necesita autorización del lado servidor antes de incorporar gestión de usuarios o dominio editorial. Los nombres de rol definidos en `SPEC.md` no bastan para decidir qué acciones puede ejecutar cada persona, sobre qué recursos ni con qué alcance.
 
-Este ADR define primero un vocabulario común. La matriz de permisos, la representación técnica y las reglas de escalamiento se completarán en las secciones siguientes antes de aprobar la decisión.
+Este ADR establece el vocabulario, la matriz de Fase 1, su representación técnica y las reglas que impiden escalamiento o pérdida de control administrativo.
+
+## Decisión
+
+La Fase 1 usará roles fijos y versionados en código, permisos explícitos por acción y alcance, y autorización obligatoria del lado servidor. Laravel representará los roles mediante un `enum` respaldado por texto, Gates y Policies aplicarán la matriz, y MySQL reforzará los valores permitidos y las operaciones críticas.
+
+Los privilegios no serán configurables desde la interfaz durante esta fase. Cualquier cambio en roles, acciones o alcances deberá pasar por migración, pruebas, revisión y Pull Request.
 
 ## Principios
 
@@ -159,6 +165,53 @@ Los seeders de demostración podrán crear usuarios no privilegiados con datos f
 - Pruebas de integración con MySQL cubrirán la restricción de roles, la transacción del último superadministrador y la revocación de sesiones y tokens.
 - Cada prohibición crítica tendrá una regresión explícita, incluidos autoescalamiento, autodesactivación y administración de roles superiores.
 - Se comprobará que una prueba falle al romper temporalmente la regla que protege, antes de aceptar su evidencia.
+
+## Alternativas descartadas
+
+### Roles y permisos configurables en tablas
+
+Se descarta por ahora un modelo dinámico con tablas de roles, permisos y relaciones. Aunque permitiría cambios sin desplegar código, introduce una interfaz administrativa sensible, invalidación de caché, auditoría adicional y combinaciones difíciles de revisar. La matriz inicial es pequeña y debe cambiar solo mediante revisión técnica.
+
+### Paquete genérico de control de acceso
+
+No se incorporará una dependencia para resolver esta primera matriz. Laravel ya ofrece Gates, Policies y conversión a enums; agregar un paquete aumentaría superficie de actualización y conceptos sin aportar una necesidad demostrada. La decisión se podrá reevaluar si aparecen permisos configurables, múltiples roles simultáneos o equipos con alcances variables.
+
+### `ENUM` nativo de MySQL
+
+Se descarta porque acopla los valores del dominio al tipo específico del motor y vuelve más rígida su evolución. Texto, enum de PHP y restricción `CHECK` mantienen validación en ambas capas con migraciones explícitas.
+
+### Condiciones de rol repartidas en controladores y vistas
+
+Se descartan comprobaciones como `if ($user->role === ...)` distribuidas por la aplicación. Duplican reglas, facilitan contradicciones y pueden convertir una condición visual en la única protección. Las decisiones deben concentrarse en Gates, Policies y servicios de operaciones críticas.
+
+### Indicador booleano de cuenta activa
+
+Se descarta un campo `is_active` porque solo registra el estado actual. `disabled_at` conserva además el momento de la desactivación y permite razonar sobre sesiones o auditoría sin agregar otro campo inmediatamente.
+
+## Consecuencias
+
+### Positivas
+
+- La política puede revisarse como una matriz única antes de exponer rutas o pantallas.
+- La denegación por defecto y la validación en servidor reducen escalamiento accidental de privilegios.
+- Los filtros en base de datos evitan revelar cuentas fuera del alcance del actor.
+- Las transacciones protegen invariantes incluso ante solicitudes concurrentes.
+- La revocación de sesiones hace efectivos los cambios de acceso inmediatamente.
+
+### Costos aceptados
+
+- Cambiar un rol o permiso requiere modificar código, migración cuando corresponda y pruebas.
+- La matriz y las Policies deben mantenerse sincronizadas mediante pruebas tabuladas.
+- Las operaciones del último superadministrador necesitan pruebas reales con MySQL, no solo SQLite.
+- El comando inicial exige una acción operativa documentada durante cada instalación productiva.
+
+## Evolución de la decisión
+
+- Agregar una acción o recurso exige actualizar este ADR o el ADR de su dominio antes de implementar rutas.
+- Agregar un rol exige actualizar el enum, la restricción de base de datos, toda la matriz y sus pruebas.
+- Retirar o renombrar un rol requiere una migración de datos previa; nunca se elimina un valor mientras existan cuentas que lo utilicen.
+- Adoptar permisos configurables o múltiples roles por cuenta requiere un nuevo ADR que reemplace explícitamente esta decisión.
+- Las capacidades editoriales y de auditoría se incorporarán en matrices propias y no se inferirán de los nombres actuales de rol.
 
 ## Fuera de este ADR
 
