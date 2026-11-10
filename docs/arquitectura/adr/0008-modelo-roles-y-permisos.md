@@ -67,6 +67,44 @@ Las acciones de noticias y auditoría se definirán en sus ADR respectivos. Nomb
 
 Un alcance amplio no anula reglas críticas como la prohibición de autoescalamiento o la protección del último superadministrador.
 
-## Fuera de esta sección
+## Matriz de permisos de Fase 1
 
-Esta primera sección no asigna todavía acciones a roles, no decide el esquema de base de datos y no implementa migraciones, enum, Gates, Policies, middleware ni interfaz.
+La matriz usa los alcances definidos anteriormente. Una restricción escrita en la celda forma parte del permiso y debe verificarse en servidor.
+
+| Acción | Visitante | Editor | Administrador | Superadministrador |
+|---|---|---|---|---|
+| `panel.acceder` | `ninguno` | `propio` | `propio` | `propio` |
+| `usuario.listar` | `ninguno` | `ninguno` | `gestionado`: solo editores | `global` |
+| `usuario.ver` | `ninguno` | `propio` | `propio` y `gestionado`: solo editores | `global` |
+| `usuario.crear` | `ninguno` | `ninguno` | `gestionado`: nueva cuenta editora | `global`: editor, administrador o superadministrador |
+| `usuario.actualizar` | `ninguno` | `propio`: datos básicos | `propio` y `gestionado`: datos básicos de editores | `global`: datos básicos |
+| `usuario.desactivar` | `ninguno` | `ninguno` | `gestionado`: solo editores | `global`: nunca a sí mismo ni al último superadministrador activo |
+| `rol.asignar` | `ninguno` | `ninguno` | `ninguno` | `global`: solo sobre otra cuenta y sin dejar al sistema sin superadministrador activo |
+
+### Conjuntos gestionados
+
+- Un **editor** no administra cuentas ajenas.
+- Un **administrador** administra únicamente cuentas cuyo rol actual y rol resultante sean `editor`.
+- Un **superadministrador** administra cuentas de cualquier rol, sujeto a las prohibiciones críticas.
+- El visitante no pertenece a un conjunto gestionado porque no es una cuenta autenticada.
+
+### Datos básicos
+
+`usuario.actualizar` cubre nombre y otros atributos de perfil que se aprueben posteriormente. No permite cambiar rol, contraseña, identificadores de sesión ni campos de seguridad. Cada operación sensible requiere una acción propia y una autorización independiente.
+
+### Prohibiciones críticas
+
+Estas reglas prevalecen sobre cualquier celda con alcance `global`:
+
+1. Ningún actor puede cambiar su propio rol.
+2. Ningún actor puede desactivar su propia cuenta mediante la administración de usuarios.
+3. Un administrador no puede ver, crear, modificar, desactivar ni cambiar el rol de otro administrador o superadministrador.
+4. No se puede desactivar, degradar ni eliminar al último superadministrador activo.
+5. Crear una cuenta no autoriza a asignarle un rol fuera del conjunto gestionado por el actor.
+6. Una cuenta desactivada no puede autenticarse ni conservar sesiones activas.
+
+La implementación debe probar cada permiso concedido y, al menos, una denegación por rol y acción. Las prohibiciones críticas requieren pruebas de regresión específicas.
+
+## Fuera de este ADR
+
+Este ADR no implementa migraciones, enum, Gates, Policies, middleware ni interfaz. Las acciones detalladas del dominio editorial y la auditoría se decidirán en sus ADR respectivos antes de construir esos módulos.
