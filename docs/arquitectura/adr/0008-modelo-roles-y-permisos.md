@@ -105,6 +105,61 @@ Estas reglas prevalecen sobre cualquier celda con alcance `global`:
 
 La implementación debe probar cada permiso concedido y, al menos, una denegación por rol y acción. Las prohibiciones críticas requieren pruebas de regresión específicas.
 
+## Representación técnica
+
+### Roles persistidos
+
+- `users.role` se almacenará como texto y Laravel lo convertirá a un `enum` respaldado de PHP.
+- Los valores iniciales serán `editor`, `administrador` y `superadministrador`.
+- La base de datos aplicará una restricción `CHECK` equivalente para impedir valores desconocidos fuera de Laravel.
+- No se usará `ENUM` nativo de MySQL: agregar o retirar un rol debe realizarse mediante una migración explícita sin acoplar el dominio a un tipo específico del motor.
+- No se creará todavía una tabla configurable de roles y permisos. La matriz es pequeña, versionada y requiere revisión de código para cambiar privilegios.
+
+El visitante no se persiste en `users.role`. La ausencia de una cuenta autenticada representa ese estado.
+
+### Estado de acceso
+
+- `users.disabled_at` será una marca de tiempo anulable: `null` significa cuenta activa y una fecha significa cuenta desactivada.
+- Se conservará la fila para mantener referencias y trazabilidad; la desactivación no equivale a borrar la cuenta.
+- La comprobación de cuenta activa se realizará al autenticar y en cada solicitud privada mediante middleware. Ocultar controles en la interfaz no sustituye esta validación.
+- Desactivar una cuenta eliminará sus sesiones persistidas, invalidará su `remember_token` y revocará sus tokens de recuperación pendientes dentro de la misma operación.
+
+Una futura reactivación requerirá una acción, autorización y registro de auditoría propios; no se considera implícita en `usuario.actualizar`.
+
+### Gates y Policies
+
+- Un Gate controlará `panel.acceder`, porque el panel no es una instancia de modelo administrada.
+- Una `UserPolicy` resolverá las acciones sobre cuentas y recibirá tanto al actor como al objetivo cuando corresponda.
+- Las consultas de listado deberán filtrar desde la base de datos según el conjunto gestionado; no se cargarán cuentas prohibidas para ocultarlas después.
+- Los controladores y Form Requests consumirán estas decisiones, pero no duplicarán la matriz.
+- La interfaz podrá consultar permisos para presentar acciones disponibles, aunque la decisión definitiva siempre permanecerá en el servidor.
+
+### Operaciones críticas
+
+Los cambios de rol y las desactivaciones se ejecutarán dentro de una transacción. Cuando puedan afectar a un superadministrador, la operación bloqueará las filas relevantes antes de contar superadministradores activos. Así se evita que dos solicitudes concurrentes desactiven o degraden simultáneamente a quienes parecen no ser el último superadministrador.
+
+Después de cambiar el rol de una cuenta se eliminarán sus sesiones persistidas y se invalidará su `remember_token`. La persona deberá autenticarse nuevamente para que ninguna sesión conserve capacidades asociadas al rol anterior.
+
+### Primer superadministrador
+
+El primer superadministrador se creará mediante un comando Artisan ejecutado conscientemente por una persona operadora:
+
+- exigirá nombre y correo explícitos;
+- solicitará la contraseña mediante entrada oculta y confirmación;
+- rechazará la operación si ya existe un superadministrador activo;
+- no incluirá credenciales predeterminadas ni datos privilegiados en seeders, variables versionadas o imágenes Docker;
+- registrará solo el resultado necesario, nunca la contraseña.
+
+Los seeders de demostración podrán crear usuarios no privilegiados con datos ficticios, pero no resolverán el arranque administrativo de producción.
+
+### Estrategia de pruebas
+
+- Pruebas unitarias tabuladas cubrirán cada celda de la matriz y sus alcances.
+- Pruebas funcionales comprobarán que rutas y solicitudes rechazan acciones aunque la interfaz intente enviarlas directamente.
+- Pruebas de integración con MySQL cubrirán la restricción de roles, la transacción del último superadministrador y la revocación de sesiones y tokens.
+- Cada prohibición crítica tendrá una regresión explícita, incluidos autoescalamiento, autodesactivación y administración de roles superiores.
+- Se comprobará que una prueba falle al romper temporalmente la regla que protege, antes de aceptar su evidencia.
+
 ## Fuera de este ADR
 
 Este ADR no implementa migraciones, enum, Gates, Policies, middleware ni interfaz. Las acciones detalladas del dominio editorial y la auditoría se decidirán en sus ADR respectivos antes de construir esos módulos.
