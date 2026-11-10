@@ -86,6 +86,17 @@ final class ResetPasswordTest extends TestCase
             ->assertSessionHasErrors($field);
     }
 
+    public function test_excessive_invalid_token_attempts_are_rate_limited(): void
+    {
+        for ($request = 1; $request <= 5; $request++) {
+            $this->postReset('token-invalido', 'maria@example.test', 'NuevaClave123!')
+                ->assertRedirect();
+        }
+
+        $this->postReset('token-invalido', 'maria@example.test', 'NuevaClave123!')
+            ->assertTooManyRequests();
+    }
+
     /**
      * @return array<string, array{array<string, string>, string}>
      */

@@ -13,9 +13,11 @@ Route::get('/login', [LoginController::class, 'create'])->name('login');
 Route::post('/login', [LoginController::class, 'store'])->name('login.store');
 Route::get('/recuperar-clave', [ForgotPasswordController::class, 'create'])->name('password.request');
 Route::post('/recuperar-clave', [ForgotPasswordController::class, 'store'])
-    ->middleware('throttle:5,1')
+    ->middleware('throttle:password-recovery')
     ->name('password.email');
 Route::get('/restablecer-clave/{token}', [ResetPasswordController::class, 'create'])->name('password.reset');
-Route::post('/restablecer-clave', [ResetPasswordController::class, 'store'])->name('password.update');
+Route::post('/restablecer-clave', [ResetPasswordController::class, 'store'])
+    ->middleware('throttle:password-reset')
+    ->name('password.update');
 Route::get('/panel', PanelController::class)->middleware(['auth', 'auth.session'])->name('panel');
 Route::post('/logout', LogoutController::class)->middleware('auth')->name('logout');

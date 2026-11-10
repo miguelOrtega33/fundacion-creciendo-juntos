@@ -69,12 +69,22 @@ final class ForgotPasswordRequestTest extends TestCase
         Notification::fake();
 
         for ($request = 1; $request <= 5; $request++) {
-            $this->postRecoveryRequest("persona{$request}@example.test")
+            $this->postRecoveryRequest('persona@example.test')
                 ->assertRedirect();
         }
 
-        $this->postRecoveryRequest('persona6@example.test')
+        $this->postRecoveryRequest('persona@example.test')
             ->assertTooManyRequests();
+    }
+
+    public function test_different_emails_behind_same_ip_do_not_share_email_limit(): void
+    {
+        Notification::fake();
+
+        for ($request = 1; $request <= 6; $request++) {
+            $this->postRecoveryRequest("persona{$request}@example.test")
+                ->assertRedirect();
+        }
     }
 
     private function postRecoveryRequest(string $email): TestResponse
