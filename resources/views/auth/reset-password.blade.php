@@ -63,10 +63,15 @@
                             name="password"
                             type="password"
                             autocomplete="new-password"
+                            minlength="15"
+                            maxlength="64"
                             aria-invalid="{{ $errors->has('password') ? 'true' : 'false' }}"
-                            @error('password') aria-describedby="password-error" @enderror
+                            aria-describedby="password-help{{ $errors->has('password') ? ' password-error' : '' }}"
                             required
                         >
+                        <span id="password-help" class="field-help">
+                            Usa entre 15 y 64 caracteres. Puedes incluir espacios y usar una frase larga.
+                        </span>
                         @error('password')
                             <span id="password-error" class="field-error">{{ $message }}</span>
                         @enderror
@@ -79,8 +84,10 @@
                             name="password_confirmation"
                             type="password"
                             autocomplete="new-password"
+                            minlength="15"
+                            maxlength="64"
                             aria-invalid="{{ $errors->has('password') ? 'true' : 'false' }}"
-                            @error('password') aria-describedby="password-error" @enderror
+                            aria-describedby="password-help{{ $errors->has('password') ? ' password-error' : '' }}"
                             required
                         >
                     </div>

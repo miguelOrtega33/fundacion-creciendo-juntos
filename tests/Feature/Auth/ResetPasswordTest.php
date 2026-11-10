@@ -17,12 +17,21 @@ final class ResetPasswordTest extends TestCase
 
     public function test_reset_page_preserves_token_and_email(): void
     {
-        $this->get('/restablecer-clave/token-prueba?email=maria%40example.test')
+        $response = $this->get('/restablecer-clave/token-prueba?email=maria%40example.test');
+
+        $response
             ->assertOk()
             ->assertViewIs('auth.reset-password')
             ->assertSee('Crear nueva contraseña')
+            ->assertSee('Usa entre 15 y 64 caracteres. Puedes incluir espacios y usar una frase larga.')
             ->assertSee('value="token-prueba"', false)
             ->assertSee('value="maria@example.test"', false);
+
+        $html = (string) $response->getContent();
+
+        self::assertSame(2, substr_count($html, 'minlength="15"'));
+        self::assertSame(2, substr_count($html, 'maxlength="64"'));
+        self::assertSame(2, substr_count($html, 'aria-describedby="password-help"'));
     }
 
     public function test_valid_token_changes_password_and_cannot_be_reused(): void

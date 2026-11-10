@@ -193,6 +193,14 @@ input {
     font-size: 0.85rem;
 }
 
+.field-help {
+    display: block;
+    margin-top: 0.45rem;
+    color: var(--color-muted);
+    font-size: 0.85rem;
+    line-height: 1.45;
+}
+
 .form-options {
     display: flex;
     align-items: center;
