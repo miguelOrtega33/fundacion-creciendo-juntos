@@ -75,7 +75,7 @@ final class UserTest extends TestCase
             'correo inválido' => [array_replace($valid, ['email' => 'no-es-correo']), 'email'],
             'contraseña vacía' => [array_replace($valid, ['password' => '']), 'password'],
             'contraseña de 14 caracteres' => [array_replace($valid, ['password' => '12345678901234']), 'password'],
-            'contraseña de 65 caracteres' => [array_replace($valid, ['password' => str_repeat('a', 65)]), 'password'],
+            'contraseña de 65 emojis' => [array_replace($valid, ['password' => str_repeat('😀', 65)]), 'password'],
         ];
     }
 
@@ -86,7 +86,7 @@ final class UserTest extends TestCase
     {
         return [
             '15 caracteres' => [str_repeat('a', 15)],
-            '64 caracteres' => [str_repeat('á', 64)],
+            '64 emojis' => [str_repeat('😀', 64)],
         ];
     }
 

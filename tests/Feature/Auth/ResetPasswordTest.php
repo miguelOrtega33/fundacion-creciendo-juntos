@@ -30,7 +30,7 @@ final class ResetPasswordTest extends TestCase
         $html = (string) $response->getContent();
 
         self::assertSame(2, substr_count($html, 'minlength="15"'));
-        self::assertSame(2, substr_count($html, 'maxlength="64"'));
+        self::assertSame(0, substr_count($html, 'maxlength='));
         self::assertSame(2, substr_count($html, 'aria-describedby="password-help"'));
     }
 
@@ -127,7 +127,7 @@ final class ResetPasswordTest extends TestCase
         return [
             'token vacío' => [['token' => ''], 'token'],
             'contraseña de 14 caracteres' => [['password' => '12345678901234', 'password_confirmation' => '12345678901234'], 'password'],
-            'contraseña de 65 caracteres' => [['password' => str_repeat('a', 65), 'password_confirmation' => str_repeat('a', 65)], 'password'],
+            'contraseña de 65 emojis' => [['password' => str_repeat('😀', 65), 'password_confirmation' => str_repeat('😀', 65)], 'password'],
             'confirmación distinta' => [['password_confirmation' => 'OtraClaveSegura123!'], 'password'],
         ];
     }
@@ -139,7 +139,7 @@ final class ResetPasswordTest extends TestCase
     {
         return [
             '15 caracteres' => [str_repeat('a', 15)],
-            '64 caracteres Unicode' => [str_repeat('á', 64)],
+            '64 emojis' => [str_repeat('😀', 64)],
         ];
     }
 

@@ -64,7 +64,6 @@
                             type="password"
                             autocomplete="new-password"
                             minlength="15"
-                            maxlength="64"
                             aria-invalid="{{ $errors->has('password') ? 'true' : 'false' }}"
                             aria-describedby="password-help{{ $errors->has('password') ? ' password-error' : '' }}"
                             required
@@ -85,7 +84,6 @@
                             type="password"
                             autocomplete="new-password"
                             minlength="15"
-                            maxlength="64"
                             aria-invalid="{{ $errors->has('password') ? 'true' : 'false' }}"
                             aria-describedby="password-help{{ $errors->has('password') ? ' password-error' : '' }}"
                             required
