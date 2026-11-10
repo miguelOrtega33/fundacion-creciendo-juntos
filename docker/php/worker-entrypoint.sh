@@ -28,6 +28,10 @@ until php -r '
     sleep 2
 done
 
-echo "APP_KEY utilizable y tablas de cola disponibles; iniciando worker."
+echo "APP_KEY utilizable y tablas de cola disponibles; iniciando proceso."
+
+if [ "$#" -gt 0 ]; then
+    exec "$@"
+fi
 
 exec php artisan queue:work --sleep=1 --tries=3 --timeout=30
