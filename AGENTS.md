@@ -22,6 +22,8 @@ Cuando una funcionalidad cambie la interfaz, el flujo visual o la experiencia de
 
 Todo Pull Request debe referenciar su Issue, explicar el problema y la solución, indicar los archivos principales, incluir los comandos y resultados reales de validación, documentar cambios de seguridad, accesibilidad, migraciones o variables de entorno, e incluir evidencias reales cuando corresponda. No se puede fusionar sin validaciones automáticas y revisión independiente.
 
+Las validaciones de desarrollo se ejecutan antes de abrir el Pull Request. La revisión final del diff, el CI y la validación del último commit se completan dentro del Pull Request antes de autorizar el merge. El método predeterminado es merge normal; squash o rebase requieren una instrucción explícita. No se inicia un segundo Pull Request mientras el actual permanezca abierto.
+
 Ejemplos de commits:
 
 - `feat(editorial): agrega transición de borrador a revisión`
