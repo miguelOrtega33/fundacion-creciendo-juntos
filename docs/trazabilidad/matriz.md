@@ -8,6 +8,6 @@
 | Fase 0: CI y validaciones | Pendiente | Pendiente | Workflow de GitHub Actions | Validación local registrada; ejecución remota pendiente |
 | Portal público | Pendiente | Pendiente | Pendiente | Pendiente |
 | Flujo editorial | Pendiente | Pendiente | Pendiente | Pendiente |
-| Seguridad y autorización | Fase posterior | Fase posterior | Pendiente | Pendiente |
+| Modelo de roles y permisos de Fase 1 | [#8](https://github.com/miguelOrtega33/fundacion-creciendo-juntos/issues/8) | Pendiente | Estrategia definida; implementación pendiente | [ADR-0008](../arquitectura/adr/0008-modelo-roles-y-permisos.md) |
 | Auditoría | Fase posterior | Fase posterior | Pendiente | Pendiente |
 

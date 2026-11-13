@@ -65,7 +65,8 @@ Las dependencias exactas instaladas quedan fijadas en `composer.lock`.
 - Fase 0 aprobada y documentada.
 - Ruta `/health`, migración mínima, Docker Compose y CI base disponibles.
 - Funcionalidades de noticias todavía fuera de implementación.
-- Permisos detallados, imágenes, auditoría y flujo editorial reservados para fases posteriores.
+- Modelo de roles y permisos de Fase 1 aprobado en [ADR-0008](docs/arquitectura/adr/0008-modelo-roles-y-permisos.md), con implementación todavía pendiente.
+- Imágenes, auditoría y flujo editorial reservados para fases posteriores.
 
 ## 🔐 Seguridad
 
