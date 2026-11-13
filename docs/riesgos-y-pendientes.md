@@ -1,7 +1,7 @@
 # Riesgos y decisiones por confirmar
 
 - Complejidad del editor visual y sanitización permitida.
-- Modelo detallado de permisos y recuperación de cuentas.
+- Implementación y validación del modelo de permisos aprobado en ADR-0008.
 - Límites, almacenamiento y procesamiento de imágenes.
 - Retención de auditoría y datos de correo.
 - Flujo editorial y política de publicación.
