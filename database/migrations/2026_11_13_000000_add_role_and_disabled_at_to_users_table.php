@@ -12,6 +12,21 @@ return new class extends Migration
 
     public function up(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            DB::statement(sprintf(
+                "ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT '%s' CHECK (role IN ('%s', '%s', '%s'))",
+                UserRole::Editor->value,
+                UserRole::Editor->value,
+                UserRole::Administrator->value,
+                UserRole::SuperAdministrator->value,
+            ));
+            Schema::table('users', function (Blueprint $table): void {
+                $table->timestamp('disabled_at')->nullable();
+            });
+
+            return;
+        }
+
         Schema::table('users', function (Blueprint $table): void {
             $table->string('role')->default(UserRole::Editor->value);
             $table->timestamp('disabled_at')->nullable();
@@ -19,7 +34,7 @@ return new class extends Migration
 
         if (DB::getDriverName() === 'mysql') {
             DB::statement(sprintf(
-                "ALTER TABLE users ADD CONSTRAINT %s CHECK (role IN ('%s', '%s', '%s'))",
+                "ALTER TABLE users ADD CONSTRAINT %s CHECK (BINARY role IN ('%s', '%s', '%s'))",
                 self::ROLE_CHECK,
                 UserRole::Editor->value,
                 UserRole::Administrator->value,
