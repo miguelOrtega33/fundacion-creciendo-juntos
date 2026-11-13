@@ -1,6 +1,6 @@
 # ADR-0008: Modelo de roles y permisos
 
-- Estado: Propuesto
+- Estado: Aprobado
 - Fecha: 2026-11-10
 - Issue: #8
 
