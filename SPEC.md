@@ -15,7 +15,7 @@ Laravel 13.x sobre PHP 8.3 o superior, MySQL 8.4, Nginx con PHP-FPM, Blade con m
 - Administrador: gestiona cuentas editoras; sus capacidades de revisión se definirán con el flujo editorial.
 - Superadministrador: gestiona cuentas de cualquier rol y asigna roles, sujeto a las prohibiciones críticas.
 
-La matriz de administración de cuentas, alcances y restricciones de Fase 1 está aprobada en [ADR-0008](docs/arquitectura/adr/0008-modelo-roles-y-permisos.md). Nombrar capacidades editoriales futuras no las autoriza hasta que su ADR defina acciones y transiciones.
+La matriz de administración de cuentas, alcances y restricciones de Fase 1 está propuesta en [ADR-0008](docs/arquitectura/adr/0008-modelo-roles-y-permisos.md). Nombrar capacidades editoriales futuras no las autoriza hasta que su ADR defina acciones y transiciones.
 
 ## Funcionalidades
 
@@ -39,5 +39,5 @@ Cada rol solo ve y ejecuta acciones autorizadas; el flujo no permite saltarse ap
 
 ## Pendientes
 
-El proveedor de correo productivo, la política de retención, el diseño visual, los límites y procesamiento de archivos, los permisos editoriales, la política de publicación, el flujo editorial y la auditoría requieren decisiones en fases posteriores. La implementación del modelo de administración de cuentas aprobado en ADR-0008 permanece pendiente.
+El proveedor de correo productivo, la política de retención, el diseño visual, los límites y procesamiento de archivos, los permisos editoriales, la política de publicación, el flujo editorial y la auditoría requieren decisiones en fases posteriores. La aprobación e implementación del modelo de administración de cuentas propuesto en ADR-0008 permanecen pendientes.
 

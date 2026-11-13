@@ -10,5 +10,5 @@ Las siguientes decisiones siguen pendientes y deben registrarse antes de impleme
 4. Flujo editorial y sus transiciones autorizadas.
 5. Política de publicación y revisión.
 
-Laravel 13.x/PHP 8.3+, MySQL 8.4, Docker Compose, Nginx/PHP-FPM, Blade, Mailpit, PHPUnit y MIT quedan resueltos en ADR-0003 a ADR-0007. El modelo de roles y permisos de Fase 1 queda resuelto en ADR-0008. No se deben introducir dependencias ni servicios para los puntos pendientes sin ADR o aprobación explícita.
+Laravel 13.x/PHP 8.3+, MySQL 8.4, Docker Compose, Nginx/PHP-FPM, Blade, Mailpit, PHPUnit y MIT quedan resueltos en ADR-0003 a ADR-0007. El modelo de roles y permisos de Fase 1 está propuesto en ADR-0008 y permanece sujeto a validación por Pull Request. No se deben introducir dependencias ni servicios para los puntos pendientes sin ADR o aprobación explícita.
 

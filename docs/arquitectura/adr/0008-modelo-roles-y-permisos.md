@@ -1,6 +1,6 @@
 # ADR-0008: Modelo de roles y permisos
 
-- Estado: Aprobado
+- Estado: Propuesto
 - Fecha: 2026-11-10
 - Issue: #8
 
@@ -98,6 +98,8 @@ La matriz usa los alcances definidos anteriormente. Una restricción escrita en 
 
 `usuario.actualizar` cubre nombre y otros atributos de perfil que se aprueben posteriormente. No permite cambiar rol, contraseña, identificadores de sesión ni campos de seguridad. Cada operación sensible requiere una acción propia y una autorización independiente.
 
+La eliminación física de cuentas no forma parte de la Fase 1. No existirá una acción `usuario.eliminar`, y cualquier intento de exponer esa operación deberá denegarse hasta que un ADR defina su necesidad, autorización y efecto sobre la trazabilidad.
+
 ### Prohibiciones críticas
 
 Estas reglas prevalecen sobre cualquier celda con alcance `global`:
@@ -105,7 +107,7 @@ Estas reglas prevalecen sobre cualquier celda con alcance `global`:
 1. Ningún actor puede cambiar su propio rol.
 2. Ningún actor puede desactivar su propia cuenta mediante la administración de usuarios.
 3. Un administrador no puede ver, crear, modificar, desactivar ni cambiar el rol de otro administrador o superadministrador.
-4. No se puede desactivar, degradar ni eliminar al último superadministrador activo.
+4. No se puede desactivar ni degradar al último superadministrador activo.
 5. Crear una cuenta no autoriza a asignarle un rol fuera del conjunto gestionado por el actor.
 6. Una cuenta desactivada no puede autenticarse ni conservar sesiones activas.
 
@@ -130,6 +132,8 @@ El visitante no se persiste en `users.role`. La ausencia de una cuenta autentica
 - La comprobación de cuenta activa se realizará al autenticar y en cada solicitud privada mediante middleware. Ocultar controles en la interfaz no sustituye esta validación.
 - Desactivar una cuenta eliminará sus sesiones persistidas, invalidará su `remember_token` y revocará sus tokens de recuperación pendientes dentro de la misma operación.
 
+Antes de implementar administración de cuentas, la aplicación deberá usar `SESSION_DRIVER=database` y una tabla de sesiones con `user_id` indexado. El almacenamiento en archivos no permite localizar y revocar de forma fiable las sesiones de una cuenta específica, por lo que no satisface esta decisión.
+
 Una futura reactivación requerirá una acción, autorización y registro de auditoría propios; no se considera implícita en `usuario.actualizar`.
 
 ### Gates y Policies
@@ -145,6 +149,12 @@ Una futura reactivación requerirá una acción, autorización y registro de aud
 Los cambios de rol y las desactivaciones se ejecutarán dentro de una transacción. Cuando puedan afectar a un superadministrador, la operación bloqueará las filas relevantes antes de contar superadministradores activos. Así se evita que dos solicitudes concurrentes desactiven o degraden simultáneamente a quienes parecen no ser el último superadministrador.
 
 Después de cambiar el rol de una cuenta se eliminarán sus sesiones persistidas y se invalidará su `remember_token`. La persona deberá autenticarse nuevamente para que ninguna sesión conserve capacidades asociadas al rol anterior.
+
+### Registro mínimo de seguridad
+
+Crear cuentas, cambiar roles y desactivar cuentas generará un evento append-only dentro de la misma transacción que aplica el cambio. Cada evento conservará como mínimo actor, objetivo, acción, valores de seguridad anterior y nuevo, resultado y fecha. No almacenará contraseñas, tokens, identificadores de sesión ni otros secretos.
+
+La aplicación no expondrá operaciones para actualizar o eliminar estos eventos. Los intentos denegados se registrarán en el log de seguridad con un identificador de correlación, porque no pertenecen a una transacción de cambio exitosa. Este registro mínimo permite reconstruir mutaciones de privilegios; el alcance, retención y consulta de la auditoría editorial completa continúan pendientes de su ADR específico.
 
 ### Primer superadministrador
 
@@ -163,7 +173,10 @@ Los seeders de demostración podrán crear usuarios no privilegiados con datos f
 - Pruebas unitarias tabuladas cubrirán cada celda de la matriz y sus alcances.
 - Pruebas funcionales comprobarán que rutas y solicitudes rechazan acciones aunque la interfaz intente enviarlas directamente.
 - Pruebas de integración con MySQL cubrirán la restricción de roles, la transacción del último superadministrador y la revocación de sesiones y tokens.
+- Una prueba de integración comprobará que las sesiones de otras cuentas permanecen intactas al revocar todas las sesiones del objetivo.
+- Las mutaciones privilegiadas comprobarán el evento de seguridad generado y que ningún secreto quede registrado.
 - Cada prohibición crítica tendrá una regresión explícita, incluidos autoescalamiento, autodesactivación y administración de roles superiores.
+- Una prueba comprobará que no exista una ruta ni una autorización para eliminar cuentas en Fase 1.
 - Se comprobará que una prueba falle al romper temporalmente la regla que protege, antes de aceptar su evidencia.
 
 ## Alternativas descartadas
@@ -197,12 +210,15 @@ Se descarta un campo `is_active` porque solo registra el estado actual. `disable
 - Los filtros en base de datos evitan revelar cuentas fuera del alcance del actor.
 - Las transacciones protegen invariantes incluso ante solicitudes concurrentes.
 - La revocación de sesiones hace efectivos los cambios de acceso inmediatamente.
+- El registro append-only permite atribuir y reconstruir cambios de privilegios.
 
 ### Costos aceptados
 
 - Cambiar un rol o permiso requiere modificar código, migración cuando corresponda y pruebas.
 - La matriz y las Policies deben mantenerse sincronizadas mediante pruebas tabuladas.
 - Las operaciones del último superadministrador necesitan pruebas reales con MySQL, no solo SQLite.
+- La administración de cuentas exige migrar las sesiones desde archivos hacia la base de datos.
+- El registro mínimo de seguridad agrega almacenamiento y obliga a definir su política de retención antes de producción.
 - El comando inicial exige una acción operativa documentada durante cada instalación productiva.
 
 ## Evolución de la decisión
