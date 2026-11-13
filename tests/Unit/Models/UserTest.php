@@ -2,8 +2,10 @@
 
 namespace Tests\Unit\Models;
 
+use App\Enums\UserRole;
 use App\Models\User;
 use App\Support\UserRules;
+use DateTimeImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -60,6 +62,39 @@ final class UserTest extends TestCase
 
         self::assertTrue($validator->fails());
         self::assertTrue($validator->errors()->has('email'));
+    }
+
+    public function test_assigns_editor_role_by_default(): void
+    {
+        $user = User::create($this->validUserData());
+
+        self::assertSame(UserRole::Editor, $user->refresh()->role);
+        self::assertNull($user->disabled_at);
+    }
+
+    public function test_role_and_disabled_at_are_not_mass_assignable(): void
+    {
+        $user = new User(array_replace($this->validUserData(), [
+            'disabled_at' => now(),
+            'role' => UserRole::SuperAdministrator,
+        ]));
+
+        self::assertNull($user->disabled_at);
+        self::assertNull($user->role);
+    }
+
+    public function test_casts_persisted_access_fields(): void
+    {
+        $user = User::create($this->validUserData());
+        $user->forceFill([
+            'disabled_at' => '2026-11-13 10:00:00',
+            'role' => UserRole::Administrator,
+        ])->save();
+
+        $user->refresh();
+
+        self::assertSame(UserRole::Administrator, $user->role);
+        self::assertInstanceOf(DateTimeImmutable::class, $user->disabled_at);
     }
 
     public static function invalidUserDataProvider(): array
