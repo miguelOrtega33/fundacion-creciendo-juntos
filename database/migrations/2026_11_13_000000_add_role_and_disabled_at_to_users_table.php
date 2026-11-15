@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\UserRole;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -8,17 +7,23 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    private const ADMINISTRATOR = 'administrador';
+
+    private const EDITOR = 'editor';
+
     private const ROLE_CHECK = 'users_role_check';
+
+    private const SUPER_ADMINISTRATOR = 'superadministrador';
 
     public function up(): void
     {
         if (DB::getDriverName() === 'sqlite') {
             DB::statement(sprintf(
                 "ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT '%s' CHECK (role IN ('%s', '%s', '%s'))",
-                UserRole::Editor->value,
-                UserRole::Editor->value,
-                UserRole::Administrator->value,
-                UserRole::SuperAdministrator->value,
+                self::EDITOR,
+                self::EDITOR,
+                self::ADMINISTRATOR,
+                self::SUPER_ADMINISTRATOR,
             ));
             Schema::table('users', function (Blueprint $table): void {
                 $table->timestamp('disabled_at')->nullable();
@@ -28,17 +33,17 @@ return new class extends Migration
         }
 
         Schema::table('users', function (Blueprint $table): void {
-            $table->string('role')->default(UserRole::Editor->value);
+            $table->string('role')->default(self::EDITOR);
             $table->timestamp('disabled_at')->nullable();
         });
 
         if (DB::getDriverName() === 'mysql') {
             DB::statement(sprintf(
-                "ALTER TABLE users ADD CONSTRAINT %s CHECK (BINARY role IN ('%s', '%s', '%s'))",
+                "ALTER TABLE users ADD CONSTRAINT %s CHECK (CAST(role AS BINARY) IN ('%s', '%s', '%s'))",
                 self::ROLE_CHECK,
-                UserRole::Editor->value,
-                UserRole::Administrator->value,
-                UserRole::SuperAdministrator->value,
+                self::EDITOR,
+                self::ADMINISTRATOR,
+                self::SUPER_ADMINISTRATOR,
             ));
         }
     }
