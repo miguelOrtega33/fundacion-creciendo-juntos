@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Contracts\SecurityEventWriter;
+use App\Contracts\SystemSecurityEventWriter;
 use App\Enums\SecurityEventAction;
 use App\Enums\UserRole;
 use App\Models\User;
@@ -70,15 +70,10 @@ final class FirstSuperAdministratorCreatorTest extends TestCase
 
     public function test_rolls_back_user_when_security_event_fails(): void
     {
-        $this->app->bind(SecurityEventWriter::class, fn (): SecurityEventWriter => new class implements SecurityEventWriter
+        $this->app->bind(SystemSecurityEventWriter::class, fn (): SystemSecurityEventWriter => new class implements SystemSecurityEventWriter
         {
-            public function record(
-                ?User $actor,
-                User $target,
-                SecurityEventAction $action,
-                array $previousValues,
-                array $newValues,
-            ): int {
+            public function recordFirstSuperAdministratorCreation(User $target): int
+            {
                 throw new RuntimeException('Fallo controlado de auditoría.');
             }
         });
@@ -90,6 +85,16 @@ final class FirstSuperAdministratorCreatorTest extends TestCase
             self::assertDatabaseCount('users', 0);
             self::assertDatabaseCount('security_events', 0);
         }
+    }
+
+    public function test_migration_preserves_system_events_by_rejecting_unsafe_rollback(): void
+    {
+        app(FirstSuperAdministratorCreator::class)->create($this->validAttributes());
+        $migration = require database_path('migrations/2026_11_16_020000_allow_system_security_event_actor.php');
+
+        $this->expectException(LogicException::class);
+
+        $migration->down();
     }
 
     #[DataProvider('invalidAttributes')]

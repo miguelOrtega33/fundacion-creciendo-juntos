@@ -2,8 +2,7 @@
 
 namespace App\Services\Auth;
 
-use App\Contracts\SecurityEventWriter;
-use App\Enums\SecurityEventAction;
+use App\Contracts\SystemSecurityEventWriter;
 use App\Enums\UserRole;
 use App\Models\User;
 use App\Support\UserRules;
@@ -18,7 +17,7 @@ final readonly class FirstSuperAdministratorCreator
 
     private const LOCK_TIMEOUT_SECONDS = 10;
 
-    public function __construct(private SecurityEventWriter $events) {}
+    public function __construct(private SystemSecurityEventWriter $events) {}
 
     /** @param array{name: string, email: string, password: string} $attributes */
     public function create(array $attributes): User
@@ -35,13 +34,7 @@ final readonly class FirstSuperAdministratorCreator
 
             $user = User::create($validated);
             $user->forceFill(['role' => UserRole::SuperAdministrator])->save();
-            $this->events->record(
-                null,
-                $user,
-                SecurityEventAction::UserCreated,
-                [],
-                ['role' => $user->role->value, 'disabled_at' => null],
-            );
+            $this->events->recordFirstSuperAdministratorCreation($user);
 
             return $user;
         }, 3));

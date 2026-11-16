@@ -3,6 +3,7 @@
 namespace App\Services\Auth;
 
 use App\Contracts\SecurityEventWriter;
+use App\Contracts\SystemSecurityEventWriter;
 use App\Enums\SecurityEventAction;
 use App\Enums\UserRole;
 use App\Models\User;
@@ -11,11 +12,11 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use LogicException;
 
-final class SecurityEventRecorder implements SecurityEventWriter
+final class SecurityEventRecorder implements SecurityEventWriter, SystemSecurityEventWriter
 {
     /** @param array<string, mixed> $previousValues @param array<string, mixed> $newValues */
     public function record(
-        ?User $actor,
+        User $actor,
         User $target,
         SecurityEventAction $action,
         array $previousValues,
@@ -25,22 +26,43 @@ final class SecurityEventRecorder implements SecurityEventWriter
             throw new LogicException('El evento de seguridad requiere una transacción activa.');
         }
 
-        if (($actor !== null && ! $actor->exists) || ! $target->exists) {
-            throw new InvalidArgumentException('Actor y objetivo deben estar persistidos cuando corresponda.');
-        }
-
-        if ($actor === null && $action !== SecurityEventAction::UserCreated) {
-            throw new InvalidArgumentException('Solo el arranque del sistema puede registrar una creación sin actor.');
+        if (! $actor->exists || ! $target->exists) {
+            throw new InvalidArgumentException('Actor y objetivo deben estar persistidos.');
         }
 
         $this->validateSnapshots($action, $previousValues, $newValues);
 
         return DB::table('security_events')->insertGetId([
-            'actor_id' => $actor?->getKey(),
+            'actor_id' => $actor->getKey(),
             'target_user_id' => $target->getKey(),
             'action' => $action->value,
             'previous_values' => json_encode($previousValues, JSON_THROW_ON_ERROR),
             'new_values' => json_encode($newValues, JSON_THROW_ON_ERROR),
+            'result' => 'exitoso',
+            'occurred_at' => now(),
+        ]);
+    }
+
+    public function recordFirstSuperAdministratorCreation(User $target): int
+    {
+        if (DB::transactionLevel() === 0) {
+            throw new LogicException('El evento de seguridad requiere una transacción activa.');
+        }
+
+        if (! $target->exists) {
+            throw new InvalidArgumentException('El objetivo debe estar persistido.');
+        }
+
+        if ($target->role !== UserRole::SuperAdministrator || $target->disabled_at !== null) {
+            throw new InvalidArgumentException('El arranque solo registra un superadministrador activo.');
+        }
+
+        return DB::table('security_events')->insertGetId([
+            'actor_id' => null,
+            'target_user_id' => $target->getKey(),
+            'action' => SecurityEventAction::UserCreated->value,
+            'previous_values' => json_encode([], JSON_THROW_ON_ERROR),
+            'new_values' => json_encode(['role' => $target->role->value, 'disabled_at' => null], JSON_THROW_ON_ERROR),
             'result' => 'exitoso',
             'occurred_at' => now(),
         ]);
