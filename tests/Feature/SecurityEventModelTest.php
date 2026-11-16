@@ -46,6 +46,12 @@ final class SecurityEventModelTest extends TestCase
         $operations = [
             fn (SecurityEvent $event) => $event->forceFill(['result' => 'alterado'])->save(),
             fn (SecurityEvent $event) => $event->delete(),
+            fn (SecurityEvent $event) => $event->forceFill(['result' => 'alterado'])->saveQuietly(),
+            fn (SecurityEvent $event) => $event->deleteQuietly(),
+            fn (SecurityEvent $event) => $event->newQuery()->whereKey($event->getKey())->update(['result' => 'alterado']),
+            fn (SecurityEvent $event) => $event->newQuery()->whereKey($event->getKey())->delete(),
+            fn (SecurityEvent $event) => $event->newQuery()->insert(['result' => 'alterado']),
+            fn (SecurityEvent $event) => SecurityEvent::forceCreate(['result' => 'alterado']),
         ];
 
         foreach ($operations as $operation) {
