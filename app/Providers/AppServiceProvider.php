@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Auth\ActiveUserProvider;
+use App\Contracts\SecurityEventWriter;
+use App\Services\Auth\SecurityEventRecorder;
 use App\Services\Auth\SessionConfiguration;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -16,7 +18,7 @@ final class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        // Los servicios de aplicación se agregarán en fases posteriores.
+        $this->app->bind(SecurityEventWriter::class, SecurityEventRecorder::class);
     }
 
     public function boot(SessionConfiguration $sessionConfiguration): void
