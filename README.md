@@ -67,6 +67,7 @@ Las dependencias exactas instaladas quedan fijadas en `composer.lock`.
 - Funcionalidades de noticias todavía fuera de implementación.
 - Modelo de roles y permisos de Fase 1 aprobado en [ADR-0008](docs/arquitectura/adr/0008-modelo-roles-y-permisos.md). Este hito incorpora roles persistidos, restricción de valores y estado de acceso; Policies, middleware y administración permanecen pendientes.
 - Sesiones persistidas en la base principal con revocación selectiva por usuario; desactivación y cambio de roles permanecen pendientes.
+- Registro append-only disponible para cambios privilegiados, con listas positivas y transacción obligatoria.
 - Imágenes, auditoría y flujo editorial reservados para fases posteriores.
 
 ## 🔐 Seguridad
