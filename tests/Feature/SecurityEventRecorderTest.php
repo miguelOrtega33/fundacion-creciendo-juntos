@@ -41,6 +41,21 @@ final class SecurityEventRecorderTest extends TestCase
         ];
     }
 
+    public function test_accepts_approved_fields_in_any_order(): void
+    {
+        [$actor, $target] = $this->users();
+
+        $eventId = DB::transaction(fn () => app(SecurityEventRecorder::class)->record(
+            $actor,
+            $target,
+            SecurityEventAction::UserCreated,
+            [],
+            ['disabled_at' => null, 'role' => 'editor'],
+        ));
+
+        self::assertDatabaseHas('security_events', ['id' => $eventId]);
+    }
+
     /** @return array{User, User} */
     private function users(): array
     {

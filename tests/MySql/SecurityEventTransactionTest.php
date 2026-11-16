@@ -18,6 +18,7 @@ final class SecurityEventTransactionTest extends TestCase
 
         try {
             DB::beginTransaction();
+            DB::table('users')->where('id', $target->id)->update(['role' => 'administrador']);
             $eventId = app(SecurityEventRecorder::class)->record(
                 $actor,
                 $target,
@@ -29,6 +30,7 @@ final class SecurityEventTransactionTest extends TestCase
 
             DB::rollBack();
 
+            self::assertSame('editor', DB::table('users')->where('id', $target->id)->value('role'));
             self::assertSame(0, DB::table('security_events')->where('id', $eventId)->count());
         } finally {
             if (DB::transactionLevel() > 0) {

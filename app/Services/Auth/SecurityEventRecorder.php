@@ -82,7 +82,11 @@ final class SecurityEventRecorder
 
     private function requireExactKeys(array $values, array $keys): void
     {
-        if (array_keys($values) !== $keys) {
+        $actualKeys = array_keys($values);
+        sort($actualKeys);
+        sort($keys);
+
+        if ($actualKeys !== $keys) {
             throw new InvalidArgumentException('Los campos de seguridad no coinciden con la lista permitida.');
         }
     }

@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('security_events', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('actor_id')->index();
-            $table->foreignId('target_user_id')->index();
+            $table->foreignId('actor_id')->constrained('users')->restrictOnDelete();
+            $table->foreignId('target_user_id')->constrained('users')->restrictOnDelete();
             $table->string('action');
             $table->json('previous_values');
             $table->json('new_values');
