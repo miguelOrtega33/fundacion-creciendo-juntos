@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\Auth\SessionConfiguration;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -16,8 +17,12 @@ final class AppServiceProvider extends ServiceProvider
         // Los servicios de aplicación se agregarán en fases posteriores.
     }
 
-    public function boot(): void
+    public function boot(SessionConfiguration $sessionConfiguration): void
     {
+        if (config('session.driver') === 'database') {
+            $sessionConfiguration->primaryConnection();
+        }
+
         Password::defaults(fn (): Password => Password::min(15)->max(64));
 
         RateLimiter::for('password-recovery', fn (Request $request): array => [
