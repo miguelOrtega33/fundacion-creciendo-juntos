@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use App\Auth\ActiveUserProvider;
 use App\Services\Auth\SessionConfiguration;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -19,6 +21,11 @@ final class AppServiceProvider extends ServiceProvider
 
     public function boot(SessionConfiguration $sessionConfiguration): void
     {
+        Auth::provider(
+            'active-eloquent',
+            fn ($app, array $config): ActiveUserProvider => new ActiveUserProvider($app['hash'], $config['model']),
+        );
+
         if (! $this->app->runningUnitTests() || config('session.driver') === 'database') {
             $sessionConfiguration->assertCompatible();
         }

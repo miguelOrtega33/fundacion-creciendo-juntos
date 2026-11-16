@@ -88,9 +88,53 @@ final class AuthenticationTest extends TestCase
             ->assertDontSee('value="incorrecta"', false);
     }
 
+    public function test_disabled_user_cannot_login_and_receives_generic_error(): void
+    {
+        $user = User::create([
+            'name' => 'Cuenta desactivada',
+            'email' => 'desactivada@example.test',
+            'password' => 'ClaveSegura123!',
+        ]);
+        $user->forceFill(['disabled_at' => now()])->save();
+
+        $response = $this->withSession(['_token' => 'test-token'])->from('/login')->post('/login', [
+            '_token' => 'test-token',
+            'email' => $user->email,
+            'password' => 'ClaveSegura123!',
+        ]);
+
+        $response->assertRedirect('/login')->assertSessionHasErrors('email');
+        $this->assertGuest();
+        $this->followRedirects($response)
+            ->assertSee('Revisa los datos ingresados e intenta nuevamente.');
+    }
+
     public function test_panel_requires_authentication(): void
     {
         $this->get('/panel')->assertRedirect('/login');
+    }
+
+    public function test_disabled_user_is_expelled_on_next_private_request(): void
+    {
+        $user = User::create([
+            'name' => 'María Pérez',
+            'email' => 'maria@example.test',
+            'password' => 'ClaveSegura123!',
+        ]);
+        $this->withSession(['_token' => 'test-token'])
+            ->post('/login', [
+                '_token' => 'test-token',
+                'email' => $user->email,
+                'password' => 'ClaveSegura123!',
+            ])
+            ->assertRedirect('/panel');
+        $this->get('/panel')->assertOk();
+
+        $user->forceFill(['disabled_at' => now()])->save();
+        Auth::forgetGuards();
+
+        $this->get('/panel')->assertRedirect('/login');
+        $this->assertGuest();
     }
 
     public function test_password_reset_invalidates_an_existing_authenticated_session(): void
