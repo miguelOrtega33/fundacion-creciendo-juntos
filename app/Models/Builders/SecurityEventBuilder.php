@@ -54,7 +54,7 @@ final class SecurityEventBuilder extends Builder
 
     public function __call($method, $parameters)
     {
-        if (in_array($method, [
+        if (in_array(strtolower($method), [
             'insert',
             'insertGetId',
             'insertOrIgnore',
