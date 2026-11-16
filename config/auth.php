@@ -17,7 +17,7 @@ return [
 
     'providers' => [
         'users' => [
-            'driver' => 'eloquent',
+            'driver' => 'active-eloquent',
             'model' => User::class,
         ],
     ],

@@ -77,6 +77,18 @@ final class ResetPasswordTest extends TestCase
         self::assertTrue(Hash::check('ClaveSegura123!', $user->fresh()->password));
     }
 
+    public function test_disabled_user_cannot_consume_a_valid_token(): void
+    {
+        $user = $this->createUser();
+        $token = Password::createToken($user);
+        $user->forceFill(['disabled_at' => now()])->save();
+
+        $this->postReset($token, $user->email, 'NuevaClaveSegura123!')
+            ->assertSessionHasErrors('email');
+
+        self::assertTrue(Hash::check('ClaveSegura123!', $user->fresh()->password));
+    }
+
     public function test_expired_token_does_not_change_password(): void
     {
         $user = $this->createUser();

@@ -76,6 +76,22 @@ final class ForgotPasswordRequestTest extends TestCase
         Notification::assertNothingSent();
     }
 
+    public function test_job_does_not_notify_disabled_user(): void
+    {
+        Notification::fake();
+        $user = User::create([
+            'name' => 'Cuenta desactivada',
+            'email' => 'desactivada@example.test',
+            'password' => 'ClaveSegura123!',
+        ]);
+        $user->forceFill(['disabled_at' => now()])->save();
+
+        (new SendPasswordResetLink($user->email))->handle();
+
+        Notification::assertNothingSent();
+        self::assertDatabaseMissing('password_reset_tokens', ['email' => $user->email]);
+    }
+
     public function test_job_is_queued_and_encrypted(): void
     {
         $job = new SendPasswordResetLink('maria@example.test');
