@@ -11,10 +11,34 @@ use Tests\TestCase;
 
 final class SessionConfigurationTest extends TestCase
 {
+    public function test_requires_the_database_session_driver(): void
+    {
+        config(['session.driver' => 'file']);
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('SESSION_DRIVER=database');
+
+        app(SessionConfiguration::class)->assertCompatible();
+    }
+
+    public function test_requires_the_migrated_session_table(): void
+    {
+        config([
+            'session.driver' => 'database',
+            'session.table' => 'user_sessions',
+        ]);
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('SESSION_TABLE=sessions');
+
+        app(SessionConfiguration::class)->assertCompatible();
+    }
+
     public function test_rejects_a_separate_session_connection(): void
     {
         config([
             'database.default' => 'mysql',
+            'session.driver' => 'database',
             'session.connection' => 'sessions',
         ]);
 

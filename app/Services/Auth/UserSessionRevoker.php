@@ -17,7 +17,7 @@ final readonly class UserSessionRevoker
         }
 
         return DB::connection($this->configuration->primaryConnection())
-            ->table(config('session.table'))
+            ->table($this->configuration->table())
             ->where('user_id', $user->getKey())
             ->delete();
     }

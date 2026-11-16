@@ -19,8 +19,8 @@ final class AppServiceProvider extends ServiceProvider
 
     public function boot(SessionConfiguration $sessionConfiguration): void
     {
-        if (config('session.driver') === 'database') {
-            $sessionConfiguration->primaryConnection();
+        if (! $this->app->runningUnitTests() || config('session.driver') === 'database') {
+            $sessionConfiguration->assertCompatible();
         }
 
         Password::defaults(fn (): Password => Password::min(15)->max(64));

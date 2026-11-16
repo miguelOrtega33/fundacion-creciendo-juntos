@@ -10,9 +10,56 @@ use Tests\TestCase;
 
 final class UserSessionRevokerTest extends TestCase
 {
+    public function test_real_database_session_is_persisted_and_revoked(): void
+    {
+        config([
+            'session.connection' => null,
+            'session.driver' => 'database',
+            'session.table' => 'sessions',
+        ]);
+        app('session')->forgetDrivers();
+        $user = $this->createUser('sesion-real');
+
+        try {
+            $response = $this->withSession(['_token' => 'test-token'])
+                ->post('/login', [
+                    '_token' => 'test-token',
+                    'email' => $user->email,
+                    'password' => 'ClaveSegura123!',
+                ]);
+
+            $response->assertSessionHasNoErrors();
+            $response->assertRedirect('/panel');
+            $sessionCookie = $response->getCookie(config('session.cookie'));
+
+            self::assertNotNull($sessionCookie);
+            self::assertSame(1, DB::table('sessions')->where('user_id', $user->id)->count());
+            self::assertSame(1, app(UserSessionRevoker::class)->revoke($user));
+
+            $this->refreshApplication();
+            config([
+                'session.connection' => null,
+                'session.driver' => 'database',
+                'session.table' => 'sessions',
+            ]);
+            app('session')->forgetDrivers();
+
+            $this->withCookie($sessionCookie->getName(), $sessionCookie->getValue())
+                ->get('/panel')
+                ->assertRedirect('/login');
+        } finally {
+            DB::table('sessions')->where('user_id', $user->id)->delete();
+            DB::table('users')->where('id', $user->id)->delete();
+        }
+    }
+
     public function test_revokes_only_sessions_owned_by_the_target_user(): void
     {
-        config(['session.connection' => null]);
+        config([
+            'session.connection' => null,
+            'session.driver' => 'database',
+            'session.table' => 'sessions',
+        ]);
         $target = $this->createUser('objetivo');
         $other = $this->createUser('otra');
         $targetSessions = [(string) Str::uuid(), (string) Str::uuid()];
