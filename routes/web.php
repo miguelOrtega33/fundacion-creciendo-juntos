@@ -19,5 +19,7 @@ Route::get('/restablecer-clave/{token}', [ResetPasswordController::class, 'creat
 Route::post('/restablecer-clave', [ResetPasswordController::class, 'store'])
     ->middleware('throttle:password-reset')
     ->name('password.update');
-Route::get('/panel', PanelController::class)->middleware(['auth', 'auth.session'])->name('panel');
+Route::get('/panel', PanelController::class)
+    ->middleware(['auth', 'auth.session', 'can:panel.acceder'])
+    ->name('panel');
 Route::post('/logout', LogoutController::class)->middleware('auth')->name('logout');

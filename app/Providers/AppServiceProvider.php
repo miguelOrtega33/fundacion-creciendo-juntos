@@ -4,11 +4,14 @@ namespace App\Providers;
 
 use App\Auth\ActiveUserProvider;
 use App\Contracts\SecurityEventWriter;
+use App\Models\User;
+use App\Policies\UserPolicy;
 use App\Services\Auth\SecurityEventRecorder;
 use App\Services\Auth\SessionConfiguration;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -27,6 +30,9 @@ final class AppServiceProvider extends ServiceProvider
             'active-eloquent',
             fn ($app, array $config): ActiveUserProvider => new ActiveUserProvider($app['hash'], $config['model']),
         );
+
+        Gate::define('panel.acceder', fn (User $user): bool => $user->disabled_at === null);
+        Gate::policy(User::class, UserPolicy::class);
 
         if (! $this->app->runningUnitTests() || config('session.driver') === 'database') {
             $sessionConfiguration->assertCompatible();
