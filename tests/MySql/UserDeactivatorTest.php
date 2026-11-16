@@ -80,7 +80,7 @@ final class UserDeactivatorTest extends TestCase
             $this->app->bind(SecurityEventWriter::class, fn (): SecurityEventWriter => new class implements SecurityEventWriter
             {
                 public function record(
-                    User $actor,
+                    ?User $actor,
                     User $target,
                     SecurityEventAction $action,
                     array $previousValues,

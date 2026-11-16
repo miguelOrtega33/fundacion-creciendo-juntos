@@ -56,6 +56,40 @@ final class SecurityEventRecorderTest extends TestCase
         self::assertDatabaseHas('security_events', ['id' => $eventId]);
     }
 
+    public function test_accepts_system_actor_only_for_user_creation(): void
+    {
+        $target = $this->createUser('objetivo');
+
+        $eventId = DB::transaction(fn () => app(SecurityEventRecorder::class)->record(
+            null,
+            $target,
+            SecurityEventAction::UserCreated,
+            [],
+            ['role' => 'superadministrador', 'disabled_at' => null],
+        ));
+
+        self::assertDatabaseHas('security_events', [
+            'id' => $eventId,
+            'actor_id' => null,
+            'target_user_id' => $target->id,
+        ]);
+    }
+
+    public function test_rejects_system_actor_for_privileged_changes(): void
+    {
+        $target = $this->createUser('objetivo');
+
+        $this->expectException(InvalidArgumentException::class);
+
+        DB::transaction(fn () => app(SecurityEventRecorder::class)->record(
+            null,
+            $target,
+            SecurityEventAction::RoleAssigned,
+            ['role' => 'editor'],
+            ['role' => 'administrador'],
+        ));
+    }
+
     /** @return array{User, User} */
     private function users(): array
     {

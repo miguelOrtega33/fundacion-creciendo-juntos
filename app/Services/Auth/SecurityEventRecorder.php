@@ -15,7 +15,7 @@ final class SecurityEventRecorder implements SecurityEventWriter
 {
     /** @param array<string, mixed> $previousValues @param array<string, mixed> $newValues */
     public function record(
-        User $actor,
+        ?User $actor,
         User $target,
         SecurityEventAction $action,
         array $previousValues,
@@ -25,14 +25,18 @@ final class SecurityEventRecorder implements SecurityEventWriter
             throw new LogicException('El evento de seguridad requiere una transacción activa.');
         }
 
-        if (! $actor->exists || ! $target->exists) {
-            throw new InvalidArgumentException('Actor y objetivo deben estar persistidos.');
+        if (($actor !== null && ! $actor->exists) || ! $target->exists) {
+            throw new InvalidArgumentException('Actor y objetivo deben estar persistidos cuando corresponda.');
+        }
+
+        if ($actor === null && $action !== SecurityEventAction::UserCreated) {
+            throw new InvalidArgumentException('Solo el arranque del sistema puede registrar una creación sin actor.');
         }
 
         $this->validateSnapshots($action, $previousValues, $newValues);
 
         return DB::table('security_events')->insertGetId([
-            'actor_id' => $actor->getKey(),
+            'actor_id' => $actor?->getKey(),
             'target_user_id' => $target->getKey(),
             'action' => $action->value,
             'previous_values' => json_encode($previousValues, JSON_THROW_ON_ERROR),

@@ -9,7 +9,7 @@ interface SecurityEventWriter
 {
     /** @param array<string, mixed> $previousValues @param array<string, mixed> $newValues */
     public function record(
-        User $actor,
+        ?User $actor,
         User $target,
         SecurityEventAction $action,
         array $previousValues,
