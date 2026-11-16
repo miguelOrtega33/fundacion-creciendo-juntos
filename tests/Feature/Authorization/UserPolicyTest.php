@@ -42,6 +42,7 @@ final class UserPolicyTest extends TestCase
             'superadministrador lista' => [UserRole::SuperAdministrator, 'viewAny', null, false, null, true],
             'editor se ve' => [UserRole::Editor, 'view', null, true, null, true],
             'editor no ve otra cuenta' => [UserRole::Editor, 'view', UserRole::Editor, false, null, false],
+            'administrador se ve' => [UserRole::Administrator, 'view', null, true, null, true],
             'administrador ve editor' => [UserRole::Administrator, 'view', UserRole::Editor, false, null, true],
             'administrador no ve administrador' => [UserRole::Administrator, 'view', UserRole::Administrator, false, null, false],
             'superadministrador ve administrador' => [UserRole::SuperAdministrator, 'view', UserRole::Administrator, false, null, true],
@@ -51,17 +52,37 @@ final class UserPolicyTest extends TestCase
             'superadministrador crea superadministrador' => [UserRole::SuperAdministrator, 'create', null, false, UserRole::SuperAdministrator, true],
             'editor actualiza sus datos' => [UserRole::Editor, 'update', null, true, null, true],
             'editor no actualiza otra cuenta' => [UserRole::Editor, 'update', UserRole::Editor, false, null, false],
+            'administrador actualiza sus datos' => [UserRole::Administrator, 'update', null, true, null, true],
             'administrador actualiza editor' => [UserRole::Administrator, 'update', UserRole::Editor, false, null, true],
             'administrador no actualiza superadministrador' => [UserRole::Administrator, 'update', UserRole::SuperAdministrator, false, null, false],
             'superadministrador actualiza administrador' => [UserRole::SuperAdministrator, 'update', UserRole::Administrator, false, null, true],
+            'editor no desactiva' => [UserRole::Editor, 'deactivate', UserRole::Editor, false, null, false],
             'administrador desactiva editor' => [UserRole::Administrator, 'deactivate', UserRole::Editor, false, null, true],
             'administrador no desactiva administrador' => [UserRole::Administrator, 'deactivate', UserRole::Administrator, false, null, false],
             'superadministrador desactiva editor' => [UserRole::SuperAdministrator, 'deactivate', UserRole::Editor, false, null, true],
             'superadministrador no se desactiva' => [UserRole::SuperAdministrator, 'deactivate', null, true, null, false],
+            'editor no asigna rol' => [UserRole::Editor, 'assignRole', UserRole::Editor, false, UserRole::Administrator, false],
             'administrador no asigna rol' => [UserRole::Administrator, 'assignRole', UserRole::Editor, false, UserRole::Editor, false],
             'superadministrador asigna rol' => [UserRole::SuperAdministrator, 'assignRole', UserRole::Editor, false, UserRole::Administrator, true],
             'superadministrador no cambia su rol' => [UserRole::SuperAdministrator, 'assignRole', null, true, UserRole::Editor, false],
         ];
+    }
+
+    public function test_visitor_is_denied_for_every_ability(): void
+    {
+        $target = $this->user('objetivo', UserRole::Editor);
+        $checks = [
+            ['viewAny', [User::class]],
+            ['view', [$target]],
+            ['create', [User::class, UserRole::Editor]],
+            ['update', [$target]],
+            ['deactivate', [$target]],
+            ['assignRole', [$target, UserRole::Administrator]],
+        ];
+
+        foreach ($checks as [$ability, $arguments]) {
+            self::assertFalse(Gate::allows($ability, $arguments));
+        }
     }
 
     public function test_disabled_actor_is_denied_for_every_ability(): void
