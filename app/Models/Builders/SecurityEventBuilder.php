@@ -47,6 +47,11 @@ final class SecurityEventBuilder extends Builder
         $this->rejectMutation();
     }
 
+    public function touch($column = null)
+    {
+        $this->rejectMutation();
+    }
+
     public function __call($method, $parameters)
     {
         if (in_array($method, [
@@ -56,6 +61,7 @@ final class SecurityEventBuilder extends Builder
             'insertOrIgnoreReturning',
             'insertOrIgnoreUsing',
             'insertUsing',
+            'truncate',
             'updateFrom',
             'updateOrInsert',
         ], true)) {
