@@ -11,6 +11,10 @@ final class User extends Authenticatable
 {
     use Notifiable;
 
+    protected $attributes = [
+        'role' => 'editor',
+    ];
+
     protected $fillable = [
         'name',
         'email',

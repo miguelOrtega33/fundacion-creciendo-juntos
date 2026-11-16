@@ -68,7 +68,7 @@ final class UserTest extends TestCase
     {
         $user = User::create($this->validUserData());
 
-        self::assertSame(UserRole::Editor, $user->refresh()->role);
+        self::assertSame(UserRole::Editor, $user->role);
         self::assertNull($user->disabled_at);
     }
 
@@ -80,7 +80,7 @@ final class UserTest extends TestCase
         ]));
 
         self::assertNull($user->disabled_at);
-        self::assertNull($user->role);
+        self::assertSame(UserRole::Editor, $user->role);
     }
 
     public function test_casts_persisted_access_fields(): void
