@@ -9,6 +9,7 @@
 | Portal público | Pendiente | Pendiente | Pendiente | Pendiente |
 | Flujo editorial | Pendiente | Pendiente | Pendiente | Pendiente |
 | Base persistente de roles y estado de acceso | [#11](https://github.com/miguelOrtega33/fundacion-creciendo-juntos/issues/11) | [#15](https://github.com/miguelOrtega33/fundacion-creciendo-juntos/pull/15) | `UserTest`, `UserRoleConstraintTest` y `RoleMigrationTest` | [ADR-0008](../arquitectura/adr/0008-modelo-roles-y-permisos.md) |
-| Aplicación de permisos, sesiones y desactivación | [#10](https://github.com/miguelOrtega33/fundacion-creciendo-juntos/issues/10) | Pendiente | Pendiente | [ADR-0008](../arquitectura/adr/0008-modelo-roles-y-permisos.md) |
+| Sesiones persistentes y revocación selectiva | [#12](https://github.com/miguelOrtega33/fundacion-creciendo-juntos/issues/12) | [#16](https://github.com/miguelOrtega33/fundacion-creciendo-juntos/pull/16) | `SessionMigrationTest`, `SessionConfigurationTest` y `UserSessionRevokerTest` | [ADR-0008](../arquitectura/adr/0008-modelo-roles-y-permisos.md) |
+| Aplicación de permisos y desactivación | [#10](https://github.com/miguelOrtega33/fundacion-creciendo-juntos/issues/10) | Pendiente | Pendiente | [ADR-0008](../arquitectura/adr/0008-modelo-roles-y-permisos.md) |
 | Auditoría | Fase posterior | Fase posterior | Pendiente | Pendiente |
 
