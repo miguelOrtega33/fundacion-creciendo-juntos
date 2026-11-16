@@ -41,7 +41,7 @@ La clave se genera antes de iniciar los servicios persistentes. App, worker y sc
 
 El scheduler elimina diariamente, a las 03:00 de `America/Santiago`, los trabajos fallidos con más de 168 horas. Antes de ese plazo se pueden inspeccionar con `php artisan queue:failed` y reintentar por UUID con `php artisan queue:retry UUID`.
 
-`composer test` ejecuta la suite rápida con SQLite en memoria. `composer test:mysql` usa la base MySQL migrada y valida los casos que dependen de su comportamiento real: consumo atómico concurrente, trabajos cifrados, reintentos de cola y recuperación ante una falla SMTP transitoria. Ambas suites son obligatorias antes de abrir un Pull Request.
+`composer test` ejecuta la suite rápida con SQLite en memoria. `composer test:mysql` usa la base MySQL migrada y valida los casos que dependen de su comportamiento real: consumo atómico concurrente, trabajos cifrados, reintentos de cola, revocación selectiva de sesiones y recuperación ante una falla SMTP transitoria. Ambas suites son obligatorias antes de abrir un Pull Request.
 
 Para detener el entorno:
 
@@ -66,6 +66,7 @@ Las dependencias exactas instaladas quedan fijadas en `composer.lock`.
 - Ruta `/health`, migración mínima, Docker Compose y CI base disponibles.
 - Funcionalidades de noticias todavía fuera de implementación.
 - Modelo de roles y permisos de Fase 1 aprobado en [ADR-0008](docs/arquitectura/adr/0008-modelo-roles-y-permisos.md). Este hito incorpora roles persistidos, restricción de valores y estado de acceso; Policies, middleware y administración permanecen pendientes.
+- Sesiones persistidas en la base principal con revocación selectiva por usuario; desactivación y cambio de roles permanecen pendientes.
 - Imágenes, auditoría y flujo editorial reservados para fases posteriores.
 
 ## 🔐 Seguridad

@@ -24,6 +24,8 @@ docker compose exec app composer test:mysql
 
 El orden es obligatorio en una instalación nueva: primero se genera `APP_KEY`, luego se ejecutan las migraciones y finalmente se inician worker y scheduler. Los tres servicios PHP deben compartir la misma clave. Como defensa adicional, el entrypoint verifica una operación real de cifrado y descifrado y espera las tablas `jobs` y `failed_jobs` antes de continuar.
 
+Las sesiones usan `SESSION_DRIVER=database`, la tabla `sessions` y la conexión principal. `SESSION_CONNECTION` debe omitirse o coincidir con `DB_CONNECTION`; una conexión distinta se rechaza porque no contiene la migración. Antes de iniciar la aplicación se deben actualizar estas variables y ejecutar las migraciones.
+
 El scheduler conserva los trabajos fallidos durante 168 horas y los elimina diariamente a las 03:00 de `America/Santiago`. Para revisar o reintentar un trabajo antes de su eliminación:
 
 ```bash
@@ -44,5 +46,5 @@ docker compose exec app composer test
 docker compose exec app composer test:mysql
 ```
 
-La suite `composer test` usa SQLite en memoria para pruebas rápidas. La suite `composer test:mysql` requiere el servicio `mysql` saludable y las migraciones aplicadas; comprueba concurrencia, atomicidad y procesamiento real de la cola sobre MySQL. Las dos deben ejecutarse antes de abrir un Pull Request.
+La suite `composer test` usa SQLite en memoria para pruebas rápidas. La suite `composer test:mysql` requiere el servicio `mysql` saludable y las migraciones aplicadas; comprueba concurrencia, atomicidad, revocación selectiva de sesiones y procesamiento real de la cola sobre MySQL. Las dos deben ejecutarse antes de abrir un Pull Request.
 
