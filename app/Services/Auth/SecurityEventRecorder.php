@@ -2,6 +2,7 @@
 
 namespace App\Services\Auth;
 
+use App\Contracts\SecurityEventWriter;
 use App\Enums\SecurityEventAction;
 use App\Enums\UserRole;
 use App\Models\User;
@@ -10,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use LogicException;
 
-final class SecurityEventRecorder
+final class SecurityEventRecorder implements SecurityEventWriter
 {
     /** @param array<string, mixed> $previousValues @param array<string, mixed> $newValues */
     public function record(
