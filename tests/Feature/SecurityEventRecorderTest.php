@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\SecurityEventAction;
+use App\Enums\UserRole;
 use App\Models\User;
 use App\Services\Auth\SecurityEventRecorder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -11,6 +12,7 @@ use Illuminate\Support\Str;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
+use TypeError;
 
 final class SecurityEventRecorderTest extends TestCase
 {
@@ -54,6 +56,46 @@ final class SecurityEventRecorderTest extends TestCase
         ));
 
         self::assertDatabaseHas('security_events', ['id' => $eventId]);
+    }
+
+    public function test_accepts_system_actor_only_for_user_creation(): void
+    {
+        $target = $this->createUser('objetivo');
+
+        $target->forceFill(['role' => UserRole::SuperAdministrator])->save();
+        $eventId = DB::transaction(fn () => app(SecurityEventRecorder::class)
+            ->recordFirstSuperAdministratorCreation($target));
+
+        self::assertDatabaseHas('security_events', [
+            'id' => $eventId,
+            'actor_id' => null,
+            'target_user_id' => $target->id,
+        ]);
+    }
+
+    public function test_system_writer_rejects_an_ordinary_user(): void
+    {
+        $target = $this->createUser('objetivo');
+
+        $this->expectException(InvalidArgumentException::class);
+
+        DB::transaction(fn () => app(SecurityEventRecorder::class)
+            ->recordFirstSuperAdministratorCreation($target));
+    }
+
+    public function test_general_writer_rejects_a_system_actor(): void
+    {
+        $target = $this->createUser('objetivo');
+
+        $this->expectException(TypeError::class);
+
+        DB::transaction(fn () => app(SecurityEventRecorder::class)->record(
+            null,
+            $target,
+            SecurityEventAction::UserCreated,
+            [],
+            ['role' => 'editor', 'disabled_at' => null],
+        ));
     }
 
     /** @return array{User, User} */

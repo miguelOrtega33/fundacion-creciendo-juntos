@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Auth\ActiveUserProvider;
 use App\Contracts\SecurityEventWriter;
+use App\Contracts\SystemSecurityEventWriter;
 use App\Models\User;
 use App\Policies\UserPolicy;
 use App\Services\Auth\SecurityEventRecorder;
@@ -22,6 +23,7 @@ final class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(SecurityEventWriter::class, SecurityEventRecorder::class);
+        $this->app->bind(SystemSecurityEventWriter::class, SecurityEventRecorder::class);
     }
 
     public function boot(SessionConfiguration $sessionConfiguration): void
