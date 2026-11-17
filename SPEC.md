@@ -39,5 +39,5 @@ Cada rol solo ve y ejecuta acciones autorizadas; el flujo no permite saltarse ap
 
 ## Pendientes
 
-El proveedor de correo productivo, la política de retención, el diseño visual, los límites y procesamiento de archivos, los permisos editoriales, la política de publicación, el flujo editorial y la auditoría requieren decisiones en fases posteriores. La implementación del modelo de administración de cuentas aprobado en ADR-0008 permanece pendiente.
+El proveedor de correo productivo, la política de retención, el diseño visual, los límites y procesamiento de archivos, los permisos editoriales, la política de publicación, el flujo editorial y la auditoría requieren decisiones en fases posteriores. La exposición web del modelo de administración de cuentas aprobado en ADR-0008 permanece pendiente.
 
