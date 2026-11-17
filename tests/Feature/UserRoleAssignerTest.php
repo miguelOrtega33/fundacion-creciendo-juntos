@@ -43,17 +43,24 @@ final class UserRoleAssignerTest extends TestCase
         self::assertSame(['role' => UserRole::Administrator->value], $event->new_values);
     }
 
-    #[DataProvider('unauthorizedActors')]
-    public function test_rejects_unauthorized_actor(UserRole $actorRole, bool $self, bool $disabled): void
-    {
+    #[DataProvider('unauthorizedAssignments')]
+    public function test_rejects_unauthorized_assignment(
+        UserRole $actorRole,
+        bool $self,
+        bool $actorDisabled,
+        bool $targetDisabled,
+    ): void {
         config(['session.connection' => null, 'session.driver' => 'database', 'session.table' => 'sessions']);
         $actor = $this->user('actor', $actorRole);
         $target = $self ? $actor : $this->user('objetivo', UserRole::Editor);
         if ($self) {
             $this->user('respaldo', UserRole::SuperAdministrator);
         }
-        if ($disabled) {
+        if ($actorDisabled) {
             $actor->forceFill(['disabled_at' => now()])->save();
+        }
+        if ($targetDisabled) {
+            $target->forceFill(['disabled_at' => now()])->save();
         }
 
         $this->expectException(AuthorizationException::class);
@@ -61,13 +68,14 @@ final class UserRoleAssignerTest extends TestCase
         app(UserRoleAssigner::class)->assign($actor, $target, UserRole::Administrator);
     }
 
-    public static function unauthorizedActors(): array
+    public static function unauthorizedAssignments(): array
     {
         return [
-            'editor' => [UserRole::Editor, false, false],
-            'administrador' => [UserRole::Administrator, false, false],
-            'autoasignación' => [UserRole::SuperAdministrator, true, false],
-            'actor desactivado' => [UserRole::SuperAdministrator, false, true],
+            'editor' => [UserRole::Editor, false, false, false],
+            'administrador' => [UserRole::Administrator, false, false, false],
+            'autoasignación' => [UserRole::SuperAdministrator, true, false, false],
+            'actor desactivado' => [UserRole::SuperAdministrator, false, true, false],
+            'objetivo desactivado' => [UserRole::SuperAdministrator, false, false, true],
         ];
     }
 

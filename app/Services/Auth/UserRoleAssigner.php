@@ -6,7 +6,6 @@ use App\Contracts\SecurityEventWriter;
 use App\Enums\SecurityEventAction;
 use App\Enums\UserRole;
 use App\Models\User;
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
@@ -43,19 +42,6 @@ final readonly class UserRoleAssigner
 
             if ($lockedTarget->role === $newRole) {
                 throw new LogicException('La cuenta ya tiene el rol solicitado.');
-            }
-
-            if ($lockedTarget->role === UserRole::SuperAdministrator) {
-                $activeSuperAdministrators = User::query()
-                    ->where('role', UserRole::SuperAdministrator->value)
-                    ->whereNull('disabled_at')
-                    ->orderBy('id')
-                    ->lockForUpdate()
-                    ->get();
-
-                if ($activeSuperAdministrators->count() <= 1) {
-                    throw new AuthorizationException('No se puede degradar al último superadministrador activo.');
-                }
             }
 
             $previousRole = $lockedTarget->role;
