@@ -74,7 +74,7 @@ Las dependencias exactas instaladas quedan fijadas en `composer.lock`.
 - Ruta `/health`, migración mínima, Docker Compose y CI base disponibles.
 - Funcionalidades de noticias todavía fuera de implementación.
 - Modelo de roles y permisos de Fase 1 aprobado en [ADR-0008](docs/arquitectura/adr/0008-modelo-roles-y-permisos.md), con autorización central mediante Gate y Policy; la interfaz web de administración permanece pendiente.
-- Sesiones persistidas en la base principal con revocación selectiva, desactivación atómica y cambio transaccional de roles; la interfaz web de administración permanece pendiente.
+- Sesiones persistidas en la base principal con revocación selectiva, creación y desactivación atómicas, y cambio transaccional de roles; la interfaz web de administración permanece pendiente.
 - Creación inicial del superadministrador disponible mediante un comando interactivo, sin credenciales predeterminadas ni secretos en el historial del shell.
 - Registro append-only a nivel de aplicación para cambios privilegiados, con listas positivas y transacción obligatoria; la administración directa de MySQL permanece fuera de esta garantía.
 - Cuentas desactivadas bloqueadas en login, sesiones privadas, remember token y recuperación de contraseña.
