@@ -37,6 +37,14 @@ Copy-Item .env.example .env
 
 La aplicación queda disponible en <http://localhost:8080>, Mailpit en <http://localhost:8025> y la ruta de salud en <http://localhost:8080/health>.
 
+En una instalación nueva, después de ejecutar las migraciones, se crea el primer superadministrador con:
+
+```bash
+docker compose exec app php artisan app:create-first-super-administrator "Nombre Administrador" "admin@example.test"
+```
+
+El comando solicita la contraseña y su confirmación mediante entradas ocultas. La contraseña nunca debe añadirse como argumento, variable versionada ni seeder. Si ya existe un superadministrador activo, la operación se rechaza sin crear otra cuenta.
+
 La clave se genera antes de iniciar los servicios persistentes. App, worker y scheduler deben leer la misma `APP_KEY`. Antes de consumir trabajos cifrados o ejecutar tareas programadas, el entrypoint comprueba que la clave pueda cifrar y descifrar correctamente y que las tablas `jobs` y `failed_jobs` estén disponibles.
 
 El scheduler elimina diariamente, a las 03:00 de `America/Santiago`, los trabajos fallidos con más de 168 horas. Antes de ese plazo se pueden inspeccionar con `php artisan queue:failed` y reintentar por UUID con `php artisan queue:retry UUID`.
@@ -65,8 +73,9 @@ Las dependencias exactas instaladas quedan fijadas en `composer.lock`.
 - Fase 0 aprobada y documentada.
 - Ruta `/health`, migración mínima, Docker Compose y CI base disponibles.
 - Funcionalidades de noticias todavía fuera de implementación.
-- Modelo de roles y permisos de Fase 1 aprobado en [ADR-0008](docs/arquitectura/adr/0008-modelo-roles-y-permisos.md). Este hito incorpora roles persistidos, restricción de valores y estado de acceso; Policies, middleware y administración permanecen pendientes.
-- Sesiones persistidas en la base principal con revocación selectiva por usuario; desactivación y cambio de roles permanecen pendientes.
+- Modelo de roles y permisos de Fase 1 aprobado en [ADR-0008](docs/arquitectura/adr/0008-modelo-roles-y-permisos.md), con autorización central mediante Gate y Policy; la interfaz web de administración permanece pendiente.
+- Sesiones persistidas en la base principal con revocación selectiva y desactivación atómica de usuarios; el cambio de roles permanece pendiente.
+- Creación inicial del superadministrador disponible mediante un comando interactivo, sin credenciales predeterminadas ni secretos en el historial del shell.
 - Registro append-only a nivel de aplicación para cambios privilegiados, con listas positivas y transacción obligatoria; la administración directa de MySQL permanece fuera de esta garantía.
 - Cuentas desactivadas bloqueadas en login, sesiones privadas, remember token y recuperación de contraseña.
 - Imágenes, auditoría y flujo editorial reservados para fases posteriores.
