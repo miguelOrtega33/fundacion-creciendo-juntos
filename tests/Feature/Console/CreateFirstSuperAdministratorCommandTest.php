@@ -2,10 +2,15 @@
 
 namespace Tests\Feature\Console;
 
+use App\Console\Commands\CreateFirstSuperAdministrator;
 use App\Enums\UserRole;
 use App\Services\Auth\FirstSuperAdministratorCreator;
+use Illuminate\Console\OutputStyle;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\BufferedOutput;
+use Symfony\Component\Console\Question\Question;
 use Tests\TestCase;
 
 final class CreateFirstSuperAdministratorCommandTest extends TestCase
@@ -31,6 +36,36 @@ final class CreateFirstSuperAdministratorCommandTest extends TestCase
             'role' => UserRole::SuperAdministrator->value,
         ]);
         $this->assertDatabaseCount('security_events', 1);
+    }
+
+    public function test_password_questions_are_really_hidden(): void
+    {
+        $password = 'ClaveSegura123!';
+        $input = new ArrayInput([
+            'name' => 'Administración inicial',
+            'email' => 'admin@example.test',
+        ]);
+        $output = new class($input, new BufferedOutput, [$password, $password]) extends OutputStyle
+        {
+            public array $hiddenQuestions = [];
+
+            public function __construct(ArrayInput $input, BufferedOutput $output, private array $answers)
+            {
+                parent::__construct($input, $output);
+            }
+
+            public function askQuestion(Question $question): mixed
+            {
+                $this->hiddenQuestions[] = $question->isHidden();
+
+                return array_shift($this->answers);
+            }
+        };
+        $command = app(CreateFirstSuperAdministrator::class);
+        $command->setLaravel($this->app);
+
+        self::assertSame(0, $command->run($input, $output));
+        self::assertSame([true, true], $output->hiddenQuestions);
     }
 
     public function test_rejects_password_confirmation_mismatch(): void
