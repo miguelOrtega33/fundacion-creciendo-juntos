@@ -27,7 +27,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
     font: inherit;
 }
 
@@ -160,7 +161,8 @@ input {
     font-weight: 700;
 }
 
-.field input {
+.field input,
+.field select {
     width: 100%;
     min-height: 3rem;
     padding: 0.75rem 0.9rem;
@@ -171,18 +173,21 @@ input {
     transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
 }
 
-.field input:hover {
+.field input:hover,
+.field select:hover {
     border-color: #91aa9f;
 }
 
-.field input:focus-visible {
+.field input:focus-visible,
+.field select:focus-visible {
     border-color: var(--color-primary);
     outline: 0;
     background: #ffffff;
     box-shadow: 0 0 0 4px rgb(36 92 72 / 18%);
 }
 
-.field input[aria-invalid="true"] {
+.field input[aria-invalid="true"],
+.field select[aria-invalid="true"] {
     border-color: var(--color-error);
 }
 
