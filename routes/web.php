@@ -23,6 +23,9 @@ Route::post('/restablecer-clave', [ResetPasswordController::class, 'store'])
 Route::get('/panel', PanelController::class)
     ->middleware(['auth', 'auth.session', 'can:panel.acceder'])
     ->name('panel');
+Route::get('/panel/usuarios', [UserController::class, 'index'])
+    ->middleware(['auth', 'auth.session', 'can:panel.acceder'])
+    ->name('users.index');
 Route::get('/panel/usuarios/crear', [UserController::class, 'create'])
     ->middleware(['auth', 'auth.session', 'can:panel.acceder'])
     ->name('users.create');

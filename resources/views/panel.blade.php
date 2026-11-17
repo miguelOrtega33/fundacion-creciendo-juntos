@@ -11,6 +11,10 @@
         <h1>Panel de gestión</h1>
         <p>Sesión iniciada correctamente.</p>
 
+        @can('viewAny', \App\Models\User::class)
+            <p><a href="{{ route('users.index') }}">Administrar usuarios</a></p>
+        @endcan
+
         @can('create', [\App\Models\User::class, \App\Enums\UserRole::Editor])
             <p><a href="{{ route('users.create') }}">Crear cuenta de usuario</a></p>
         @endcan
