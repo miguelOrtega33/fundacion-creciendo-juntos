@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Contracts\SecurityEventWriter;
 use App\Enums\SecurityEventAction;
 use App\Enums\UserRole;
+use App\Models\SecurityEvent;
 use App\Models\User;
 use App\Services\Auth\UserRoleAssigner;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -34,13 +35,12 @@ final class UserRoleAssignerTest extends TestCase
         self::assertNull($result->remember_token);
         self::assertDatabaseMissing('sessions', ['id' => 'objetivo-session']);
         self::assertDatabaseHas('sessions', ['id' => 'otra-session']);
-        self::assertDatabaseHas('security_events', [
-            'actor_id' => $actor->id,
-            'target_user_id' => $target->id,
-            'action' => SecurityEventAction::RoleAssigned->value,
-            'previous_values' => json_encode(['role' => UserRole::Editor->value]),
-            'new_values' => json_encode(['role' => UserRole::Administrator->value]),
-        ]);
+        $event = SecurityEvent::query()->sole();
+        self::assertSame($actor->id, $event->actor_id);
+        self::assertSame($target->id, $event->target_user_id);
+        self::assertSame(SecurityEventAction::RoleAssigned, $event->action);
+        self::assertSame(['role' => UserRole::Editor->value], $event->previous_values);
+        self::assertSame(['role' => UserRole::Administrator->value], $event->new_values);
     }
 
     #[DataProvider('unauthorizedActors')]
