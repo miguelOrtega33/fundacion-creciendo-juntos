@@ -10,6 +10,10 @@
         <h1>Panel de gestión</h1>
         <p>Sesión iniciada correctamente.</p>
 
+        @can('create', [\App\Models\User::class, \App\Enums\UserRole::Editor])
+            <p><a href="{{ route('users.create') }}">Crear cuenta de usuario</a></p>
+        @endcan
+
         <form method="POST" action="{{ route('logout') }}">
             @csrf
             <button type="submit">Cerrar sesión</button>
