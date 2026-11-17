@@ -62,6 +62,29 @@ final class UserListingWebTest extends TestCase
             });
     }
 
+    public function test_administrator_paginates_only_editor_accounts(): void
+    {
+        $administrator = $this->user(UserRole::Administrator, 'actor-administrador');
+        $editors = collect(range(1, 11))->map(
+            fn (int $number): User => $this->user(UserRole::Editor, "editor-{$number}"),
+        );
+        $this->user(UserRole::Administrator, 'administrador-oculto');
+        $this->user(UserRole::SuperAdministrator, 'super-oculto');
+
+        $this->actingAs($administrator)->get(route('users.index'))
+            ->assertViewHas('users', function (LengthAwarePaginator $users) use ($editors): bool {
+                return $users->currentPage() === 1 && $users->perPage() === 10
+                    && $users->total() === 11
+                    && $users->getCollection()->modelKeys() === $editors->take(10)->pluck('id')->all();
+            });
+        $this->get(route('users.index', ['page' => 2]))
+            ->assertViewHas('users', function (LengthAwarePaginator $users) use ($editors): bool {
+                return $users->currentPage() === 2 && $users->count() === 1
+                    && $users->total() === 11
+                    && $users->getCollection()->modelKeys() === [$editors->last()->id];
+            });
+    }
+
     public function test_listing_renders_authorized_details_and_account_status(): void
     {
         $superAdministrator = $this->user(UserRole::SuperAdministrator, 'actor-super');
