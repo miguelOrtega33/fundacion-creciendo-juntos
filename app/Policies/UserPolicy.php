@@ -51,7 +51,9 @@ final class UserPolicy
 
     public function assignRole(User $actor, User $target, UserRole $newRole): bool
     {
-        if ($actor->role !== UserRole::SuperAdministrator || $actor->is($target)) {
+        if ($actor->role !== UserRole::SuperAdministrator
+            || $actor->is($target)
+            || $target->disabled_at !== null) {
             return false;
         }
 
